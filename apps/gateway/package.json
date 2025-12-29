@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.ts"
+    "dev": "nodemon --watch src --ext ts,json --exec ts-node ./src/index.ts",
+    "build": "rm -rf build/ && tsc -p .",
+    "start": "node build/index.js"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/jsonwebtoken": "^9.0.5"
+    "@types/jsonwebtoken": "^9.0.5",
+    "typescript": "^5.9.2"
   }
 }

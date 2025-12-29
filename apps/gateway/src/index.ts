@@ -38,7 +38,12 @@ type AuthenticateMiddleware = (
 ) => void;
 
 const authenticate: AuthenticateMiddleware = (req, res, next) => {
-    if (req.path === "/auth/login" || req.path === "/auth/register") {
+    if (
+        req.path === "/auth/login" ||
+        req.path === "/auth/register" ||
+        req.path.endsWith("/auth/login") ||
+        req.path.endsWith("/auth/register")
+    ) {
         return next();
     }
 
