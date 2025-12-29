@@ -77,9 +77,16 @@ app.use("/api/:service", (req, res, next) => {
     const target = SERVICE_URLS[req.params.service];
     if (!target) return res.status(404).send("Service not found");
 
-    return proxy(target)(req, res, next);
+    return proxy(target, {
+        parseReqBody: false, // IMPORTANT for multipart/form-data
+        proxyReqOptDecorator: (proxyReqOpts) => {
+            const internalSecret = process.env.INTERNAL_SECRET;
+            proxyReqOpts.headers = proxyReqOpts.headers ?? {};
+            if (internalSecret) proxyReqOpts.headers["x-internal-key"] = internalSecret;
+            return proxyReqOpts;
+        },
+    })(req, res, next);
 });
-
 // Healthcheck
 app.get("/health", (req, res) =>
     res.json({ status: "ok", service: "gateway" })
