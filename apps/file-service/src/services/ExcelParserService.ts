@@ -1,54 +1,96 @@
 import ExcelJS from "exceljs";
 import { ParsedRecordModel } from "../database/models/ParsedRecordModel";
-import { fixEmail, fixNumber, fixString } from "../utils/autoFix";
+import { fixString, fixNumber, fixEmail } from "../utils/autoFix";
 
-interface ParseResult {
-  validCount: number;
-  errorCount: number;
-  errors: any[];
-}
-
-export const parseExcel = async (file: Express.Multer.File): Promise<ParseResult> => {
+export const parseExcel = async (file: Express.Multer.File) => {
   const workbook = new ExcelJS.Workbook();
-
-  // Node 22 types model Buffer as generic; ExcelJS expects a plain Buffer.
-  // Buffer.from(...) normalizes the runtime value; casting avoids TS's Buffer generic incompatibility.
   await workbook.xlsx.load(Buffer.from(file.buffer) as any);
-
-  const worksheet = workbook.worksheets[0];
 
   let validCount = 0;
   let errorCount = 0;
-  let errors: any[] = [];
+  const errors: any[] = [];
 
-  for (let i = 2; i <= worksheet.rowCount; i++) {
-    try {
-      const row = worksheet.getRow(i);
+  for (const worksheet of workbook.worksheets) {
+    const headerRow = worksheet.getRow(1);
 
-      // AUTO-HEALING FIELDS
-      const name = fixString(row.getCell(1).value);
-      const age = fixNumber(row.getCell(2).value);
-      const email = fixEmail(row.getCell(3).value);
+    interface Header {
+      original: string;
+      normalized: string;
+    }
 
-      // REQUIRED FIELD VALIDATION
-      if (!name || !email) {
-        throw new Error(`Missing required fields at row: ${i}`);
+    const headers: Header[] = (headerRow.values as ExcelJS.CellValue[])
+      .slice(1)
+      .map((h: ExcelJS.CellValue) => normalizeHeader(h));
+
+    if (headers.length === 0) continue;
+
+    for (let rowIndex = 2; rowIndex <= worksheet.rowCount; rowIndex++) {
+      try {
+        const row = worksheet.getRow(rowIndex);
+
+        const rawData: Record<string, any> = {};
+        const normalizedData: Record<string, any> = {};
+
+        interface Header {
+          original: string;
+          normalized: string;
+        }
+
+        (headers as Header[]).forEach((header: Header, i: number) => {
+          const cellValue: ExcelJS.CellValue = row.getCell(i + 1).value;
+          rawData[header.original] = cellValue;
+
+          normalizedData[header.normalized] = autoFix(cellValue);
+        });
+
+        const extractionQuality = calculateQuality(normalizedData);
+
+        await ParsedRecordModel.create({
+          fileId: file.originalname,
+          sheetName: worksheet.name,
+          rowIndex,
+          rawData,
+          normalizedData,
+          extractionQuality,
+        });
+
+        validCount++;
+      } catch (err: any) {
+        errorCount++;
+        errors.push({
+          sheet: worksheet.name,
+          row: rowIndex,
+          message: err.message,
+        });
       }
-
-      // SAVE TO DB
-      await ParsedRecordModel.create({ name, age, email });
-
-      validCount++;
-    } catch (err: any) {
-      errorCount++;
-      errors.push({ row: i, message: err.message });
-      continue; // self-healing: continue parsing
     }
   }
 
-  return {
-    validCount,
-    errorCount,
-    errors
-  };
+  return { validCount, errorCount, errors };
+};
+
+/* ================= Helpers ================= */
+
+const normalizeHeader = (v: any) => {
+  const original = String(v ?? "").trim();
+  const normalized = original
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+
+  return { original, normalized };
+};
+
+const autoFix = (v: any) => {
+  return (
+    fixEmail(v) ??
+    fixNumber(v) ??
+    fixString(v)
+  );
+};
+
+const calculateQuality = (row: Record<string, any>) => {
+  const values = Object.values(row);
+  const filled = values.filter((v) => v !== null && v !== undefined).length;
+  return Math.round((filled / values.length) * 100);
 };

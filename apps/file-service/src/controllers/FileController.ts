@@ -6,15 +6,15 @@ export default {
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
         }
-
         try {
             const result = await parseExcel(req.file);
 
             return res.json({
                 message: "File parsed successfully",
+                sheetsProcessed: result.validCount > 0,
                 parsedRows: result.validCount,
                 failedRows: result.errorCount,
-                errors: result.errors
+                errors: result.errors.slice(0, 10), // prevent huge payload
             });
         } catch (err) {
             console.error("Parser error:", err);

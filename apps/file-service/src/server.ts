@@ -1,24 +1,36 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import fileRoutes from "./routes/fileRoutes";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import app from "./app";
 
 dotenv.config();
 
-const app = express();
+const PORT = process.env.PORT || 8084;
+const MONGO_URI = process.env.MONGO_URI!;
 
-app.use(cors());
-app.use(helmet());
-app.use(express.json());
+let server: any;
 
-app.use("/api/v1", fileRoutes);
+mongoose
+    .connect(MONGO_URI)
+    .then(() => {
+        console.log("MongoDB connected");
 
-mongoose.connect(process.env.MONGO_URI!)
-    .then(() => console.log("DB connected"))
-    .catch(err => console.error("DB error:", err));
+        server = app.listen(PORT, () =>
+            console.log(`File-service running on port ${PORT}`)
+        );
+    })
+    .catch((err) => console.error("MongoDB error:", err));
 
-app.listen(process.env.PORT, () =>
-    console.log(`File-service running on ${process.env.PORT}`)
-);
+// Graceful shutdown
+const exitHandler = () => {
+    if (server) {
+        server.close(() => {
+            console.log("Server closed");
+            process.exit(0);
+        });
+    } else {
+        process.exit(1);
+    }
+};
+
+process.on("SIGTERM", exitHandler);
+process.on("SIGINT", exitHandler);

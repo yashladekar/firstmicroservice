@@ -70,6 +70,7 @@ app.use("/api", authenticate);
 const SERVICE_URLS: Record<string, string> = {
     users: process.env.USER_SERVICE_URL!,
     products: process.env.PRODUCT_SERVICE_URL!,
+    files: process.env.FILE_SERVICE_URL!,
 };
 
 app.use("/api/:service", (req, res, next) => {
