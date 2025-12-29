@@ -1,6 +1,8 @@
 import { ErrorRequestHandler } from "express";
 import { ApiError } from "../utils"
 
+export { default as validate } from "./validate";
+
 export const errorConverter: ErrorRequestHandler = (err, req, res, next) => {
     let error = err;
     if (!(error instanceof ApiError)) {

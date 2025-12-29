@@ -1,92 +1,57 @@
-import express, { Request, Response } from "express";
+import { Request, Response } from "express";
+import type { CookieOptions } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../database";
-import { ApiError, encryptPassword, isPasswordMatch } from "../utils";
+import { encryptPassword, isPasswordMatch } from "../utils";
 import config from "../config/config";
-import { IUser } from "../database";
 
-const jwtSecret = config.JWT_SECRET as string;
-const COOKIE_EXPIRATION_DAYS = 90; // cookie expiration in days
-const expirationDate = new Date(
-    Date.now() + COOKIE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000
-);
-const cookieOptions = {
-    expires: expirationDate,
-    secure: false,
+const cookieOptions: CookieOptions = {
     httpOnly: true,
+    secure: config.env === "production",
+    sameSite: "strict",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
 };
 
-const register = async (req: Request, res: Response) => {
-    try {
+const signToken = (payload: any) =>
+    jwt.sign(payload, config.JWT_SECRET!, { expiresIn: "1d" });
+
+export default {
+    async register(req: Request, res: Response) {
         const { name, email, password } = req.body;
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            throw new ApiError(400, "User already exists!");
-        }
+
+        const exists = await User.findOne({ email });
+        if (exists) return res.status(400).json({ message: "User already exists" });
+
+        const hashed = await encryptPassword(password);
 
         const user = await User.create({
             name,
             email,
-            password: await encryptPassword(password),
+            password: hashed,
         });
-
-        const userData = {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-        };
 
         return res.json({
-            status: 200,
-            message: "User registered successfully!",
-            data: userData,
+            message: "User registered",
+            data: { id: user._id, name: user.name, email: user.email },
         });
-    } catch (error: any) {
-        return res.json({
-            status: 500,
-            message: error.message,
-        });
-    }
-};
+    },
 
-const createSendToken = async (user: IUser, res: Response) => {
-    const { name, email, id } = user;
-    const token = jwt.sign({ name, email, id }, jwtSecret, {
-        expiresIn: "1d",
-    });
-    if (config.env === "production") cookieOptions.secure = true;
-    res.cookie("jwt", token, cookieOptions);
-
-    return token;
-};
-
-const login = async (req: Request, res: Response) => {
-    try {
+    async login(req: Request, res: Response) {
         const { email, password } = req.body;
-        const user = await User.findOne({ email }).select("+password");
-        if (
-            !user ||
-            !(await isPasswordMatch(password, user.password as string))
-        ) {
-            throw new ApiError(400, "Incorrect email or password");
-        }
 
-        const token = await createSendToken(user!, res);
+        const user = await User.findOne({ email }).select("+password");
+        if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+        const match = await isPasswordMatch(password, user.password);
+        if (!match) return res.status(400).json({ message: "Invalid credentials" });
+
+        const token = signToken({ id: user._id, email: user.email });
+
+        res.cookie("jwt", token, cookieOptions);
 
         return res.json({
-            status: 200,
-            message: "User logged in successfully!",
+            message: "Login successful",
             token,
         });
-    } catch (error: any) {
-        return res.json({
-            status: 500,
-            message: error.message,
-        });
-    }
-};
-
-export default {
-    register,
-    login,
+    },
 };
