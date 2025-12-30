@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// schema.prisma
+
+// ---------------------------------------------------------
+// MODEL 1: SYSTEM (Parent)
+// Stores the high-level info (OS, DB) found in the first row
+// ---------------------------------------------------------
+model System {
+  sid String @id @unique // The "anchor" field (e.g., DEF, XYZ)
+
+  // Common Fields (Mapped from both files)
+  mainProduct String? // ABAP: 'Main Product', JAVA: 'Main Product'
+  dbVersion   String? // ABAP: 'DB Version...', JAVA: 'Databse' (typo)
+  osType      String? // ABAP: 'OS Type', JAVA: 'OS'
+
+  // ABAP Specific Details
+  osVersion      String? // ABAP: 'OS version'
+  osPatch        String? // ABAP: 'OS Patch'
+  kernelRelease  String? // ABAP: 'Kernel Release'
+  dbslVersion    String? // ABAP: 'DBSL Version'
+  dbslPatchLevel String? // ABAP: 'DBSL Patch Level'
+
+  // JAVA Specific Details
+  vmJavaVersion     String? // JAVA: 'VM Java Version'
+  vmRuntimeVersion  String? // JAVA: 'VM Runtime Version'
+  javaKernelVersion String? // JAVA: 'Java Kernel Version'
+
+  // Relations
+  abapComponents AbapComponent[]
+  javaComponents JavaComponent[]
+
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------
+// MODEL 2: ABAP COMPONENT (Child)
+// ---------------------------------------------------------
+model AbapComponent {
+  id String @id @default(uuid())
+
+  component        String // Column: 'Component'
+  release          String // Column: 'Release'
+  spLevel          String? // Column: 'SP-Level'
+  supportPackage   String? // Column: 'Support Package'
+  shortDescription String? // Column: 'Short Description...'
+
+  // Relation
+  systemSid String
+  system    System @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+
+  @@index([systemSid])
+}
+
+// ---------------------------------------------------------
+// MODEL 3: JAVA COMPONENT (Child)
+// ---------------------------------------------------------
+model JavaComponent {
+  id String @id @default(uuid())
+
+  name     String // Column: 'Name' (Note: Java puts Name in col 4 usually)
+  vendor   String? // Column: 'Vendor'
+  version  String // Column: 'Version'
+  location String? // Column: 'Location'
+
+  // Relation
+  systemSid String
+  system    System @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+
+  @@index([systemSid])
+}
