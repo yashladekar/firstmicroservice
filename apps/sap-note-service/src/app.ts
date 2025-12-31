@@ -7,7 +7,7 @@ import rateLimit from "./middleware/rateLimit"
 // import { internalAuth } from "./middleware/internalAuth";
 import { errorConverter, errorHandler } from "./middleware/errorHandler";
 import healthRoutes from "./routes/health.routes"
-import fileRoutes from "./routes/file.routes"
+
 const app = express()
 
 app.use(helmet())
@@ -21,7 +21,7 @@ app.use(rateLimit)
 // app.use(internalAuth);[]
 
 app.use("/health", healthRoutes)
-app.use("/files", fileRoutes)
+
 
 
 app.use(errorConverter);
