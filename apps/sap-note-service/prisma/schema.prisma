@@ -12,3 +12,25 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model SapNote {
+  id              String   @id @default(uuid())
+
+  noteNumber      String   @unique
+  title           String
+
+  component       String   // SAP_GWFND, ENGINEAPI, etc
+  fromVersion     String?
+  toVersion       String?
+
+  cve             String?
+  cvssScore       Float?
+  cvssVector      String?
+
+  priority        String?  // HotNews / High / Medium
+  releasedOn      DateTime?
+
+  rawText         String   // full extracted text
+
+  createdAt       DateTime @default(now())
+}
