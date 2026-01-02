@@ -3,7 +3,8 @@ dotenv.config()
 
 import app from "./app"
 import { logger } from "./utils/logger"
-// import "./workers/file.worker"
+import "./workers/note.worker";
+
 
 const PORT = process.env.PORT || 8085
 

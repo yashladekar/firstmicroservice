@@ -14,23 +14,31 @@ datasource db {
 }
 
 model SapNote {
-  id              String   @id @default(uuid())
+  id           String   @id @default(uuid())
 
-  noteNumber      String   @unique
-  title           String
+  noteNumber   String   @unique
+  priority     String?
+  cvssScore    Float?
+  cvssVector   String?
 
-  component       String   // SAP_GWFND, ENGINEAPI, etc
-  fromVersion     String?
-  toVersion       String?
+  confidence   Int
+  correction   String?
 
-  cve             String?
-  cvssScore       Float?
-  cvssVector      String?
+  rawText      String
+  createdAt    DateTime @default(now())
 
-  priority        String?  // HotNews / High / Medium
-  releasedOn      DateTime?
+  components   SapNoteComponent[]
+}
 
-  rawText         String   // full extracted text
+model SapNoteComponent {
+  id          String   @id @default(uuid())
 
-  createdAt       DateTime @default(now())
+  noteId      String
+  note        SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  component   String   // e.g. SAP_GWFND, ENGINEAPI
+  fromVersion String?
+  toVersion   String?
+
+  @@unique([noteId, component])
 }
