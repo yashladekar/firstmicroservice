@@ -17,6 +17,7 @@ model SapNote {
   id           String   @id @default(uuid())
 
   noteNumber   String   @unique
+  title        String? 
   priority     String?
   cvssScore    Float?
   cvssVector   String?
@@ -36,7 +37,7 @@ model SapNoteComponent {
   noteId      String
   note        SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
-  component   String   // e.g. SAP_GWFND, ENGINEAPI
+  component   String
   fromVersion String?
   toVersion   String?
 

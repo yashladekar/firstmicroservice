@@ -4,6 +4,12 @@ dotenv.config()
 import app from "./app"
 import { logger } from "./utils/logger"
 import "./workers/note.worker";
+import fs from "fs";
+
+const uploadDir = "uploads/notes";
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 
 const PORT = process.env.PORT || 8085

@@ -36,16 +36,22 @@ export const noteWorker = new Worker<NoteJob>(
             const extracted = extractSapNoteFields(normalizedText);
 
             // 4️⃣ Confidence gate
+            logger.info(
+                `[SAP-NOTE] confidence=${extracted.confidence} note=${extracted.noteNumber ?? "unknown"}`
+            );
+
             if (!extracted.noteNumber || extracted.confidence < 40) {
                 throw new Error(
                     `Low confidence extraction (${extracted.confidence})`
                 );
             }
 
+
             // 5️⃣ Store SAP Note (upsert)
             const note = await prisma.sapNote.upsert({
                 where: { noteNumber: extracted.noteNumber },
                 update: {
+                    title: extracted.title,
                     priority: extracted.priority,
                     cvssScore: extracted.cvssScore,
                     cvssVector: extracted.cvssVector,
@@ -54,6 +60,7 @@ export const noteWorker = new Worker<NoteJob>(
                     rawText: normalizedText,
                 },
                 create: {
+                    title: extracted.title,
                     noteNumber: extracted.noteNumber,
                     priority: extracted.priority,
                     cvssScore: extracted.cvssScore,
