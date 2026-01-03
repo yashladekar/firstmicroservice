@@ -38,6 +38,8 @@ model System {
   abapComponents AbapComponent[]
   javaComponents JavaComponent[]
 
+  vulnerabilities SapVulnerability[]
+
   updatedAt DateTime @updatedAt
 }
 
@@ -85,6 +87,8 @@ model SapNote {
   createdAt  DateTime @default(now())
 
   components SapNoteComponent[]
+
+  vulnerabilities SapVulnerability[]
 }
 
 model SapNoteComponent {
@@ -104,10 +108,12 @@ model SapVulnerability {
   id            String   @id @default(uuid())
 
   systemId      String
+  system        System   @relation(fields: [systemId], references: [sid], onDelete: Cascade)
   componentName String
   componentVersion String
 
   noteId        String
+  note          SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteNumber    String
 
   fromVersion   String?
@@ -116,4 +122,6 @@ model SapVulnerability {
   detectedAt    DateTime @default(now())
 
   @@unique([systemId, componentName, noteId])
+  @@index([systemId])
+  @@index([noteId])
 }
