@@ -11,7 +11,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 
-const PORT = process.env.PORT || 8085
+const PORT = process.env.PORT || 8084
 
 const server = app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT} as ${process.env.NODE_ENV}`);

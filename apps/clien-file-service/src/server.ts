@@ -5,7 +5,7 @@ import app from "./app"
 import { logger } from "./utils/logger"
 import "./workers/file.worker"
 
-const PORT = process.env.PORT || 8083
+const PORT = process.env.PORT
 
 const server = app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT} as ${process.env.NODE_ENV}`);
