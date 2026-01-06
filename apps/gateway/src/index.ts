@@ -71,6 +71,8 @@ const SERVICE_URLS: Record<string, string> = {
     users: process.env.USER_SERVICE_URL!,
     products: process.env.PRODUCT_SERVICE_URL!,
     files: process.env.FILE_SERVICE_URL!,
+    notes: process.env.SAP_NOTE_SERVICE_URL!,
+    core: process.env.SAP_CORE_SERVICE_URL!,
 };
 
 app.use("/api/:service", (req, res, next) => {
