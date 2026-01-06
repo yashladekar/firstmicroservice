@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+generator client {
+  provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- SYSTEM MODELS (from client-file-service) ---
+model System {
+  sid            String   @id @unique
+  mainProduct    String?
+  dbVersion      String?
+  osType         String?
+  osVersion      String?
+  osPatch        String?
+  kernelRelease  String?
+  dbslVersion    String?
+  dbslPatchLevel String?
+  vmJavaVersion  String?
+  vmRuntimeVersion String?
+  javaKernelVersion String?
+  updatedAt      DateTime @updatedAt
+
+  abapComponents   AbapComponent[]
+  javaComponents   JavaComponent[]
+  vulnerabilities  SapVulnerability[]
+}
+
+model AbapComponent {
+  id               String  @id @default(uuid())
+  component        String
+  release          String
+  // Critical for accuracy:
+  spLevel          String? 
+  supportPackage   String?
+  shortDescription String?
+  
+  systemSid        String
+  system           System  @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+  
+  @@index([systemSid])
+}
+
+model JavaComponent {
+  id        String  @id @default(uuid())
+  name      String
+  vendor    String?
+  version   String
+  location  String?
+  
+  systemSid String
+  system    System  @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+  
+  @@index([systemSid])
+}
+
+// --- NOTE MODELS (from sap-note-service) ---
+model SapNote {
+  id           String   @id @default(uuid())
+  noteNumber   String   @unique
+  title        String?
+  priority     String?
+  cvssScore    Float?
+  cvssVector   String?
+  confidence   Int
+  correction   String?
+  rawText      String
+  createdAt    DateTime @default(now())
+
+  components   SapNoteComponent[]
+  vulnerabilities SapVulnerability[]
+}
+
+model SapNoteComponent {
+  id          String   @id @default(uuid())
+  noteId      String
+  note        SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  component   String
+  fromVersion String?
+  toVersion   String?
+  // Critical for accuracy:
+  fixedInSp   String?  
+
+  @@unique([noteId, component])
+}
+
+// --- VULNERABILITY MODELS (from sap-core-service) ---
+model SapVulnerability {
+  id               String   @id @default(uuid())
+  systemId         String
+  system           System   @relation(fields: [systemId], references: [sid], onDelete: Cascade)
+  
+  componentName    String
+  componentVersion String
+  
+  noteId           String
+  note             SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteNumber       String
+  
+  fromVersion      String?
+  toVersion        String?
+  
+  detectedAt       DateTime @default(now())
+
+  @@unique([systemId, componentName, noteId])
+  @@index([systemId])
+  @@index([noteId])
+}
