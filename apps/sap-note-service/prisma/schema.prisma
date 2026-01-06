@@ -40,6 +40,6 @@ model SapNoteComponent {
   component   String
   fromVersion String?
   toVersion   String?
-
+  fixedInSp  String?
   @@unique([noteId, component])
 }

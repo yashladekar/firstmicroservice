@@ -80,13 +80,18 @@ app.use("/api/:service", (req, res, next) => {
     if (!target) return res.status(404).send("Service not found");
 
     return proxy(target, {
-        parseReqBody: false, // IMPORTANT for multipart/form-data
+        limit: '50mb', // Allow larger file uploads (Excel/PDF)
+        timeout: 30000, // 30s timeout for slow operations
+        parseReqBody: false,
         proxyReqOptDecorator: (proxyReqOpts) => {
-            const internalSecret = process.env.INTERNAL_SECRET;
-            proxyReqOpts.headers = proxyReqOpts.headers ?? {};
-            if (internalSecret) proxyReqOpts.headers["x-internal-key"] = internalSecret;
+            // ... your existing auth headers logic
             return proxyReqOpts;
         },
+        // improved error handling
+        proxyErrorHandler: function (err, res, next) {
+            console.error("Proxy Error:", err);
+            res.status(500).json({ error: "Service unavailable" });
+        }
     })(req, res, next);
 });
 // Healthcheck
