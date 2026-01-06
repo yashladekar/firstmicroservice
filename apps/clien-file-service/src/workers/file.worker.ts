@@ -50,7 +50,11 @@ export const fileWorker = new Worker<FileJobPayload>(
 fileWorker.on('completed', (job) => {
     console.log(`[Job ${job.id}] Completed successfully.`);
 });
+fileWorker.on('failed', async (job, err) => {
+    console.error(`[Job ${job?.id}] Failed permanently: ${err.message}`);
 
-fileWorker.on('failed', (job, err) => {
-    console.log(`[Job ${job?.id}] Failed permanently after retries. Reason: ${err.message}`);
+    // PRODUCTION READY: Alert the team or save to a 'FailedJobs' table
+    // await prisma.failedJob.create({ 
+    //   data: { jobId: job?.id, reason: err.message, payload: job?.data } 
+    // });
 });
