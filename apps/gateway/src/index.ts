@@ -38,11 +38,13 @@ type AuthenticateMiddleware = (
 ) => void;
 
 const authenticate: AuthenticateMiddleware = (req, res, next) => {
+    // Allow unauthenticated access to auth endpoints
     if (
         req.path === "/auth/login" ||
         req.path === "/auth/register" ||
         req.path.endsWith("/auth/login") ||
-        req.path.endsWith("/auth/register")
+        req.path.endsWith("/auth/register") ||
+        req.path.startsWith("/api/users/auth/")
     ) {
         return next();
     }
@@ -98,7 +100,6 @@ app.use("/api/:service", (req, res, next) => {
     return proxy(target, {
         limit: '50mb', // Allow larger file uploads (Excel/PDF)
         timeout: 30000, // 30s timeout for slow operations
-        parseReqBody: false,
         proxyReqOptDecorator: (proxyReqOpts) => {
             // ... your existing auth headers logic
             return proxyReqOpts;
