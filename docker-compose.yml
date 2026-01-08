@@ -1,0 +1,189 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-microservices}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:6-alpine
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+    container_name: user_service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 4000
+      MONGO_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/users?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+      MESSAGE_BROKER_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    ports:
+      - "4000:4000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:4000/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  file-service:
+    build:
+      context: .
+      dockerfile: apps/clien-file-service/Dockerfile
+    container_name: file_service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 8082
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-microservices}
+      REDIS_URL: redis://redis_cache:6379
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-internal-key}
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - file_uploads:/app/uploads/temp
+
+  sap-note-service:
+    build:
+      context: .
+      dockerfile: apps/sap-note-service/Dockerfile
+    container_name: sap_note_service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 8083
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-microservices}
+      REDIS_URL: redis://redis_cache:6379
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - note_uploads:/app/uploads/notes
+
+  sap-core-service:
+    build:
+      context: .
+      dockerfile: apps/sap-core-service/Dockerfile
+    container_name: sap_core_service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 8084
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-microservices}
+      REDIS_URL: redis://redis_cache:6379
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    container_name: api_gateway
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 8085
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      USER_SERVICE_URL: http://user_service:4000
+      FILE_SERVICE_URL: http://file_service:8082
+      SAP_NOTE_SERVICE_URL: http://sap_note_service:8083
+      SAP_CORE_SERVICE_URL: http://sap_core_service:8084
+    ports:
+      - "8085:8085"
+    depends_on:
+      - user-service
+      - file-service
+      - sap-note-service
+      - sap-core-service
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+  rabbitmq_data:
+  file_uploads:
+  note_uploads:
