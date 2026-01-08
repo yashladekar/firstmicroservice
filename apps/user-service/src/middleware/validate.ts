@@ -15,12 +15,13 @@ export default (schema: z.ZodTypeAny) => (
         schema.parse({ body: req.body });
         next();
     } catch (err: unknown) {
-        if (!(err instanceof z.ZodError)) {
-            throw err;
+        if (err instanceof z.ZodError) {
+            return res.status(400).json({
+                message: "Validation error",
+                errors: err.issues,
+            });
         }
-        return res.status(400).json({
-            message: "Validation error",
-            errors: err.issues,
-        });
+        // Pass non-Zod errors to the next error handler
+        next(err);
     }
 };

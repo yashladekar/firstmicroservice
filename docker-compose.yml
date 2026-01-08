@@ -69,18 +69,12 @@ services:
       context: .
       dockerfile: apps/user-service/Dockerfile
     container_name: user_service
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: 4000
-      MONGO_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/users?authSource=admin
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
-      MESSAGE_BROKER_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    env_file:
+      - ./apps/user-service/.env
     ports:
-      - "4000:4000"
+      - "8081:8081"
     depends_on:
       mongodb:
-        condition: service_healthy
-      rabbitmq:
         condition: service_healthy
     healthcheck:
       test:
@@ -101,13 +95,8 @@ services:
       context: .
       dockerfile: apps/clien-file-service/Dockerfile
     container_name: file_service
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: 8082
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-microservices}
-      REDIS_URL: redis://redis_cache:6379
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
-      INTERNAL_SECRET: ${INTERNAL_SECRET:-internal-key}
+    env_file:
+      - ./apps/clien-file-service/.env
     ports:
       - "8082:8082"
     depends_on:
@@ -123,12 +112,8 @@ services:
       context: .
       dockerfile: apps/sap-note-service/Dockerfile
     container_name: sap_note_service
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: 8083
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-microservices}
-      REDIS_URL: redis://redis_cache:6379
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+    env_file:
+      - ./apps/sap-note-service/.env
     ports:
       - "8083:8083"
     depends_on:
@@ -144,12 +129,8 @@ services:
       context: .
       dockerfile: apps/sap-core-service/Dockerfile
     container_name: sap_core_service
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: 8084
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-microservices}
-      REDIS_URL: redis://redis_cache:6379
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
+    env_file:
+      - ./apps/sap-core-service/.env
     ports:
       - "8084:8084"
     depends_on:
@@ -163,17 +144,10 @@ services:
       context: .
       dockerfile: apps/gateway/Dockerfile
     container_name: api_gateway
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: 8085
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
-      USER_SERVICE_URL: http://user_service:4000
-      FILE_SERVICE_URL: http://file_service:8082
-      SAP_NOTE_SERVICE_URL: http://sap_note_service:8083
-      SAP_CORE_SERVICE_URL: http://sap_core_service:8084
+    env_file:
+      - ./apps/gateway/.env
     ports:
-      - "8085:8085"
+      - "8080:8080"
     depends_on:
       - user-service
       - file-service

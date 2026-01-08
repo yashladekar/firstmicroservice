@@ -63,6 +63,21 @@ const authenticate: AuthenticateMiddleware = (req, res, next) => {
     }
 };
 
+// Route auth endpoints to user service (without /api prefix)
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL!;
+app.use("/auth", proxy(USER_SERVICE_URL, {
+    limit: '50mb',
+    timeout: 30000,
+    parseReqBody: false,
+    proxyReqOptDecorator: (proxyReqOpts) => {
+        return proxyReqOpts;
+    },
+    proxyErrorHandler: function (err, res, next) {
+        console.error("Proxy Error:", err);
+        res.status(500).json({ error: "Service unavailable" });
+    }
+}));
+
 // Apply auth to all microservice routes
 app.use("/api", authenticate);
 
