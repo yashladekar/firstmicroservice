@@ -5,25 +5,22 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-microservices}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   mongodb:
-    image: mongo:6-alpine
+    image: mongo:6
     container_name: mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
     ports:
       - "27017:27017"
     volumes:
@@ -51,8 +48,8 @@ services:
     image: rabbitmq:3.12-management-alpine
     container_name: rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -69,12 +66,18 @@ services:
       context: .
       dockerfile: apps/user-service/Dockerfile
     container_name: user_service
-    env_file:
-      - ./apps/user-service/.env
+    environment:
+      NODE_ENV: production
+      PORT: 8081
+      JWT_SECRET: secret
+      MESSAGE_BROKER_URL: amqp://guest:guest@rabbitmq:5672
+      MONGO_URI: mongodb://mongodb:27017/user-service
     ports:
       - "8081:8081"
     depends_on:
       mongodb:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test:
@@ -84,7 +87,7 @@ services:
           "--quiet",
           "--tries=1",
           "--spider",
-          "http://localhost:4000/health",
+          "http://localhost:8081/health",
         ]
       interval: 10s
       timeout: 5s
@@ -95,8 +98,13 @@ services:
       context: .
       dockerfile: apps/clien-file-service/Dockerfile
     container_name: file_service
-    env_file:
-      - ./apps/clien-file-service/.env
+    environment:
+      NODE_ENV: production
+      PORT: 8082
+      DATABASE_URL: postgresql://postgres:root@postgres:5432/clien_file_service_db?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: secret
+      INTERNAL_SECRET: secret
     ports:
       - "8082:8082"
     depends_on:
@@ -112,8 +120,13 @@ services:
       context: .
       dockerfile: apps/sap-note-service/Dockerfile
     container_name: sap_note_service
-    env_file:
-      - ./apps/sap-note-service/.env
+    environment:
+      NODE_ENV: production
+      PORT: 8083
+      DATABASE_URL: postgresql://postgres:root@postgres:5432/sap_note_service?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: secret
+      INTERNAL_SECRET: secret
     ports:
       - "8083:8083"
     depends_on:
@@ -129,8 +142,13 @@ services:
       context: .
       dockerfile: apps/sap-core-service/Dockerfile
     container_name: sap_core_service
-    env_file:
-      - ./apps/sap-core-service/.env
+    environment:
+      NODE_ENV: production
+      PORT: 8084
+      DATABASE_URL: postgresql://postgres:root@postgres:5432/sap_core_service?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: secret
+      INTERNAL_SECRET: secret
     ports:
       - "8084:8084"
     depends_on:
@@ -144,8 +162,16 @@ services:
       context: .
       dockerfile: apps/gateway/Dockerfile
     container_name: api_gateway
-    env_file:
-      - ./apps/gateway/.env
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      USER_SERVICE_URL: http://user-service:8081
+      FILE_SERVICE_URL: http://file-service:8082
+      SAP_NOTE_SERVICE_URL: http://sap-note-service:8083
+      SAP_CORE_SERVICE_URL: http://sap-core-service:8084
+      JWT_SECRET: secret
+      INTERNAL_SECRET: secret
+      CORS_ORIGIN: "*"
     ports:
       - "8080:8080"
     depends_on:
