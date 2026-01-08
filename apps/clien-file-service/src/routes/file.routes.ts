@@ -8,5 +8,7 @@ const router = Router();
 const upload = multer({ dest: 'uploads/temp/' });
 
 router.post('/upload', upload.single('file'), uploadFile);
-
+router.get('/check', (req, res) => {
+    res.status(200).send('File service is up and running');
+});
 export default router;

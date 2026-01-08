@@ -1,0 +1,5567 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+
+
+================================================================
+Directory Structure
+================================================================
+apps/
+  clien-file-service/
+    prisma/
+      migrations/
+        20251230234115_init/
+          migration.sql
+        migration_lock.toml
+      schema.prisma
+    src/
+      config/
+        env.ts
+      controller/
+        client-file-controller.ts
+      middleware/
+        correlationId.ts
+        errorHandler.ts
+        internalAuth.ts
+        rateLimit.ts
+      queues/
+        file.queue.ts
+      routes/
+        file.routes.ts
+        health.routes.ts
+      services/
+        file.service.ts
+      utils/
+        APIError.ts
+        logger.ts
+      workers/
+        file.worker.ts
+      app.ts
+      server.ts
+    .env.example
+    .gitignore
+    package.json
+    prisma.config.ts
+    tsconfig.json
+  docs/
+    app/
+      fonts/
+        GeistMonoVF.woff
+        GeistVF.woff
+      favicon.ico
+      globals.css
+      layout.tsx
+      page.module.css
+      page.tsx
+    public/
+      file-text.svg
+      globe.svg
+      next.svg
+      turborepo-dark.svg
+      turborepo-light.svg
+      vercel.svg
+      window.svg
+    .gitignore
+    eslint.config.js
+    next.config.js
+    package.json
+    README.md
+    tsconfig.json
+  gateway/
+    src/
+      index.ts
+    .env.example
+    package.json
+    tsconfig.json
+  sap-core-service/
+    prisma/
+      schema.prisma
+    src/
+      config/
+        db.ts
+        env.ts
+      controllers/
+        scan.controller.ts
+        summary.controller.ts
+        system.controller.ts
+        vulnerability.controller.ts
+      middleware/
+        errorHandler.ts
+        rateLimit.ts
+      routes/
+        health.routes.ts
+        index.ts
+      services/
+        matcher.service.ts
+      utils/
+        APIError.ts
+        logger.ts
+        versionMatcher.ts
+      app.ts
+      server.ts
+    .env.example
+    .gitignore
+    package.json
+    prisma.config.ts
+    tsconfig.json
+  sap-note-service/
+    prisma/
+      migrations/
+        20260102154811_sap_dev_notes/
+          migration.sql
+        20260102212013_change_in_title/
+          migration.sql
+        migration_lock.toml
+      schema.prisma
+    src/
+      config/
+        db.ts
+        env.ts
+        redis.ts
+      controllers/
+        upload.controller.ts
+      middleware/
+        errorHandler.ts
+        rateLimit.ts
+      queues/
+        note.queue.ts
+      routes/
+        file.routes.ts
+        health.routes.ts
+      utils/
+        APIError.ts
+        logger.ts
+        noteExtractor.ts
+        sectionExtractor.ts
+        textNormalizer.ts
+      workers/
+        note.worker.ts
+      app.ts
+      server.ts
+    .env.example
+    .gitignore
+    package.json
+    prisma.config.ts
+    tsconfig.json
+  user-service/
+    src/
+      config/
+        config.ts
+      controllers/
+        AuthController.ts
+      database/
+        models/
+          UserModel.ts
+        connection.ts
+        index.ts
+      middleware/
+        index.ts
+        validate.ts
+      routes/
+        authRoutes.ts
+      services/
+        rabbitmq.service.ts
+      utils/
+        index.ts
+      validation/
+        auth.schema.ts
+      server.ts
+    .env.example
+    package.json
+    tsconfig.json
+  web/
+    app/
+      fonts/
+        GeistMonoVF.woff
+        GeistVF.woff
+      favicon.ico
+      globals.css
+      layout.tsx
+      page.module.css
+      page.tsx
+    public/
+      file-text.svg
+      globe.svg
+      next.svg
+      turborepo-dark.svg
+      turborepo-light.svg
+      vercel.svg
+      window.svg
+    .gitignore
+    eslint.config.js
+    next.config.js
+    package.json
+    README.md
+    tsconfig.json
+packages/
+  database/
+    prisma/
+      schema.prisma
+    src/
+      index.ts
+    .gitignore
+    package.json
+    prisma.config.ts
+    tsconfig.json
+  eslint-config/
+    base.js
+    next.js
+    package.json
+    react-internal.js
+    README.md
+  typescript-config/
+    base.json
+    nextjs.json
+    package.json
+    react-library.json
+  ui/
+    src/
+      button.tsx
+      card.tsx
+      code.tsx
+    eslint.config.mjs
+    package.json
+    tsconfig.json
+.env.example
+.gitignore
+.npmrc
+Customer Data Upload Format.xlsx
+docker-compose.yml
+package.json
+pnpm-workspace.yaml
+README.md
+turbo.json
+
+================================================================
+Files
+================================================================
+
+================
+File: apps/clien-file-service/.env.example
+================
+DATABASE_URL="postgresql://postgres:root@localhost:5432/clien_file_service_db?schema=public"
+REDIS_URL="redis://localhost:6379"
+PORT=8082
+JWT_SECRET="e9d967c27e0286956ace1c25327fecdb41314a28998e03ebf3bd4300efb4528a"
+NODE_ENV="development"
+
+================
+File: apps/gateway/.env.example
+================
+PORT=8080
+USER_SERVICE_URL=http://localhost:8081
+FILE_SERVICE_URL=http://localhost:8082
+SAP_NOTE_SERVICE_URL=http://localhost:8083
+SAP_CORE_SERVICE_URL=http://localhost:8084
+
+JWT_SECRET=secret
+INTERNAL_SECRET=secret
+
+================
+File: apps/sap-core-service/.env.example
+================
+# Environment variables declared in this file are NOT automatically loaded by Prisma.
+# Please add `import "dotenv/config";` to your `prisma.config.ts` file, or use the Prisma CLI with Bun
+# to load environment variables from .env files: https://pris.ly/prisma-config-env-vars.
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+# The following `prisma+postgres` URL is similar to the URL produced by running a local Prisma Postgres
+# server with the `prisma dev` CLI command, when not choosing any non-default ports or settings. The API key, unlike the
+# one found in a remote Prisma Postgres URL, does not contain any sensitive information.
+    
+DATABASE_URL="postgresql://postgres:root@localhost:5432/sap_note_service?schema=public"
+REDIS_URL="redis://localhost:6379"
+PORT=8084
+JWT_SECRET="secret"
+NODE_ENV="development"
+
+================
+File: apps/sap-note-service/.env.example
+================
+# Environment variables declared in this file are NOT automatically loaded by Prisma.
+# Please add `import "dotenv/config";` to your `prisma.config.ts` file, or use the Prisma CLI with Bun
+# to load environment variables from .env files: https://pris.ly/prisma-config-env-vars.
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+# The following `prisma+postgres` URL is similar to the URL produced by running a local Prisma Postgres
+# server with the `prisma dev` CLI command, when not choosing any non-default ports or settings. The API key, unlike the
+# one found in a remote Prisma Postgres URL, does not contain any sensitive information.
+
+DATABASE_URL="postgresql://postgres:root@localhost:5432/sap_note_service?schema=public"
+JWT_SECRET="your_jwt_secret_key"
+REDIS_URL="redis://localhost:6379"
+NODE_ENV="development"
+PORT="8083"
+
+================
+File: apps/user-service/.env.example
+================
+NODE_ENV="development"
+PORT=8081
+JWT_SECRET="secret"
+MESSAGE_BROKER_URL="amqp://localhost:5672"
+MONGO_URI="mongodb://localhost:27017/user-service"
+
+================
+File: .env.example
+================
+# Environment variables declared in this file are NOT automatically loaded by Prisma.
+# Please add `import "dotenv/config";` to your `prisma.config.ts` file, or use the Prisma CLI with Bun
+# to load environment variables from .env files: https://pris.ly/prisma-config-env-vars.
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+# The following `prisma+postgres` URL is similar to the URL produced by running a local Prisma Postgres
+# server with the `prisma dev` CLI command, when not choosing any non-default ports or settings. The API key, unlike the
+# one found in a remote Prisma Postgres URL, does not contain any sensitive information.
+
+DATABASE_URL="prisma+postgres://localhost:51213/?api_key=eyJkYXRhYmFzZVVybCI6InBvc3RncmVzOi8vcG9zdGdyZXM6cG9zdGdyZXNAbG9jYWxob3N0OjUxMjE0L3RlbXBsYXRlMT9zc2xtb2RlPWRpc2FibGUmY29ubmVjdGlvbl9saW1pdD0xJmNvbm5lY3RfdGltZW91dD0wJm1heF9pZGxlX2Nvbm5lY3Rpb25fbGlmZXRpbWU9MCZwb29sX3RpbWVvdXQ9MCZzaW5nbGVfdXNlX2Nvbm5lY3Rpb25zPXRydWUmc29ja2V0X3RpbWVvdXQ9MCIsIm5hbWUiOiJkZWZhdWx0Iiwic2hhZG93RGF0YWJhc2VVcmwiOiJwb3N0Z3JlczovL3Bvc3RncmVzOnBvc3RncmVzQGxvY2FsaG9zdDo1MTIxNS90ZW1wbGF0ZTE_c3NsbW9kZT1kaXNhYmxlJmNvbm5lY3Rpb25fbGltaXQ9MSZjb25uZWN0X3RpbWVvdXQ9MCZtYXhfaWRsZV9jb25uZWN0aW9uX2xpZmV0aW1lPTAmcG9vbF90aW1lb3V0PTAmc2luZ2xlX3VzZV9jb25uZWN0aW9ucz10cnVlJnNvY2tldF90aW1lb3V0PTAifQ"
+
+================
+File: apps/clien-file-service/prisma/migrations/20251230234115_init/migration.sql
+================
+-- CreateTable
+CREATE TABLE "System" (
+    "sid" TEXT NOT NULL,
+    "mainProduct" TEXT,
+    "dbVersion" TEXT,
+    "osType" TEXT,
+    "osVersion" TEXT,
+    "osPatch" TEXT,
+    "kernelRelease" TEXT,
+    "dbslVersion" TEXT,
+    "dbslPatchLevel" TEXT,
+    "vmJavaVersion" TEXT,
+    "vmRuntimeVersion" TEXT,
+    "javaKernelVersion" TEXT,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "System_pkey" PRIMARY KEY ("sid")
+);
+
+-- CreateTable
+CREATE TABLE "AbapComponent" (
+    "id" TEXT NOT NULL,
+    "component" TEXT NOT NULL,
+    "release" TEXT NOT NULL,
+    "spLevel" TEXT,
+    "supportPackage" TEXT,
+    "shortDescription" TEXT,
+    "systemSid" TEXT NOT NULL,
+
+    CONSTRAINT "AbapComponent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "JavaComponent" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "vendor" TEXT,
+    "version" TEXT NOT NULL,
+    "location" TEXT,
+    "systemSid" TEXT NOT NULL,
+
+    CONSTRAINT "JavaComponent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "System_sid_key" ON "System"("sid");
+
+-- CreateIndex
+CREATE INDEX "AbapComponent_systemSid_idx" ON "AbapComponent"("systemSid");
+
+-- CreateIndex
+CREATE INDEX "JavaComponent_systemSid_idx" ON "JavaComponent"("systemSid");
+
+-- AddForeignKey
+ALTER TABLE "AbapComponent" ADD CONSTRAINT "AbapComponent_systemSid_fkey" FOREIGN KEY ("systemSid") REFERENCES "System"("sid") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "JavaComponent" ADD CONSTRAINT "JavaComponent_systemSid_fkey" FOREIGN KEY ("systemSid") REFERENCES "System"("sid") ON DELETE CASCADE ON UPDATE CASCADE;
+
+================
+File: apps/clien-file-service/prisma/migrations/migration_lock.toml
+================
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "postgresql"
+
+================
+File: apps/clien-file-service/prisma/schema.prisma
+================
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// schema.prisma
+
+// ---------------------------------------------------------
+// MODEL 1: SYSTEM (Parent)
+// Stores the high-level info (OS, DB) found in the first row
+// ---------------------------------------------------------
+model System {
+  sid String @id @unique // The "anchor" field (e.g., DEF, XYZ)
+
+  // Common Fields (Mapped from both files)
+  mainProduct String? // ABAP: 'Main Product', JAVA: 'Main Product'
+  dbVersion   String? // ABAP: 'DB Version...', JAVA: 'Databse' (typo)
+  osType      String? // ABAP: 'OS Type', JAVA: 'OS'
+
+  // ABAP Specific Details
+  osVersion      String? // ABAP: 'OS version'
+  osPatch        String? // ABAP: 'OS Patch'
+  kernelRelease  String? // ABAP: 'Kernel Release'
+  dbslVersion    String? // ABAP: 'DBSL Version'
+  dbslPatchLevel String? // ABAP: 'DBSL Patch Level'
+
+  // JAVA Specific Details
+  vmJavaVersion     String? // JAVA: 'VM Java Version'
+  vmRuntimeVersion  String? // JAVA: 'VM Runtime Version'
+  javaKernelVersion String? // JAVA: 'Java Kernel Version'
+
+  // Relations
+  abapComponents AbapComponent[]
+  javaComponents JavaComponent[]
+
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------
+// MODEL 2: ABAP COMPONENT (Child)
+// ---------------------------------------------------------
+model AbapComponent {
+  id String @id @default(uuid())
+
+  component        String // Column: 'Component'
+  release          String // Column: 'Release'
+  spLevel          String? // Column: 'SP-Level'
+  supportPackage   String? // Column: 'Support Package'
+  shortDescription String? // Column: 'Short Description...'
+
+  // Relation
+  systemSid String
+  system    System @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+
+  @@index([systemSid])
+}
+
+// ---------------------------------------------------------
+// MODEL 3: JAVA COMPONENT (Child)
+// ---------------------------------------------------------
+model JavaComponent {
+  id String @id @default(uuid())
+
+  name     String // Column: 'Name' (Note: Java puts Name in col 4 usually)
+  vendor   String? // Column: 'Vendor'
+  version  String // Column: 'Version'
+  location String? // Column: 'Location'
+
+  // Relation
+  systemSid String
+  system    System @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+
+  @@index([systemSid])
+}
+
+================
+File: apps/clien-file-service/src/controller/client-file-controller.ts
+================
+import { Request, Response } from 'express';
+import path from 'node:path';
+import { fileQueue } from '../queues/file.queue';
+
+export const uploadFile = async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Add job to queue
+        const job = await fileQueue.add('parse-excel', {
+            filePath: path.resolve(req.file.path), // Use absolute path for worker reliability
+            fileName: req.file.originalname,
+        }, {
+            attempts: 3, // SELF HEALING: Retry 3 times if worker crashes
+            backoff: {
+                type: 'exponential',
+                delay: 5000, // Wait 5s, then 10s, then 20s
+            },
+            removeOnComplete: true, // Don't clog Redis with success logs
+            removeOnFail: false, // Keep failed jobs for inspection
+        });
+
+        // Return immediately - don't wait for parsing
+        return res.status(202).json({
+            message: 'File upload accepted. Processing in background.',
+            jobId: job.id,
+            fileName: req.file.originalname
+        });
+
+    } catch (error) {
+        console.error('Upload Error:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+================
+File: apps/clien-file-service/src/middleware/correlationId.ts
+================
+import { Request, Response, NextFunction } from "express";
+import { randomUUID } from "crypto";
+
+export const correlationId = (req: Request, res: Response, next: NextFunction) => {
+    const id = req.headers["x-correlation-id"] || randomUUID();
+
+    req.headers["x-correlation-id"] = id;
+    res.setHeader("x-correlation-id", id);
+
+    next();
+};
+
+================
+File: apps/clien-file-service/src/middleware/errorHandler.ts
+================
+import { Request, Response, NextFunction } from "express";
+import APIError from "../utils/APIError";
+
+export const errorConverter = (err: any, req: Request, res: Response, next: NextFunction) => {
+    let error = err;
+
+    if (!(error instanceof APIError)) {
+        const statusCode = error.statusCode || 500;
+        const message = error.message || "Internal server error";
+        error = new APIError(statusCode, message, false);
+    }
+
+    next(error);
+};
+
+export const errorHandler = (err: APIError, req: Request, res: Response, next: NextFunction) => {
+    const response: any = {
+        code: err.statusCode,
+        message: err.message,
+    };
+
+    if (process.env.NODE_ENV === "development") {
+        response.stack = err.stack;
+    }
+
+    res.status(err.statusCode).json(response);
+};
+
+================
+File: apps/clien-file-service/src/middleware/internalAuth.ts
+================
+import { Request, Response, NextFunction } from "express";
+
+export const internalAuth = (req: Request, res: Response, next: NextFunction) => {
+    const internalKey = req.headers["x-internal-key"];
+    const expectedKey = process.env.INTERNAL_SECRET;
+
+    // Allow healthcheck endpoints to bypass
+    if (req.path.includes("/health")) return next();
+
+    if (!internalKey || internalKey !== expectedKey) {
+        return res.status(401).json({ message: "Unauthorized internal request" });
+    }
+
+    next();
+};
+
+================
+File: apps/clien-file-service/src/middleware/rateLimit.ts
+================
+import rateLimit from "express-rate-limit";
+
+export default rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+================
+File: apps/clien-file-service/src/queues/file.queue.ts
+================
+import { Queue } from 'bullmq';
+import IORedis from 'ioredis';
+
+// Shared Redis connection
+const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+});
+
+export const fileQueue = new Queue('file-import-queue', { connection });
+
+// Define the payload structure
+export interface FileJobPayload {
+    filePath: string;
+    fileName: string;
+    userId?: string; // If you track who uploaded it
+}
+
+================
+File: apps/clien-file-service/src/routes/file.routes.ts
+================
+import { Router } from 'express';
+import multer from 'multer';
+import { uploadFile } from '../controller/client-file-controller';
+
+const router = Router();
+
+// Configure Multer to save to a temp directory
+const upload = multer({ dest: 'uploads/temp/' });
+
+router.post('/upload', upload.single('file'), uploadFile);
+
+export default router;
+
+================
+File: apps/clien-file-service/src/routes/health.routes.ts
+================
+import { Router } from "express"
+
+const router = Router()
+
+router.get("/", (req, res) => { res.json({ status: "ok" }) })
+
+export default router
+
+================
+File: apps/clien-file-service/src/services/file.service.ts
+================
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import * as XLSX from "xlsx";
+import * as fs from "fs";
+import { env } from "../config/env";
+
+const pool = new Pool({ connectionString: env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+interface ParseResult {
+    success: boolean;
+    totalRows: number;
+    processedCount: number;
+    errors: string[];
+}
+
+export class ClientFileService {
+
+    /**
+     * Reads a file from disk, parses it, and updates DB.
+     * Returns a detailed report.
+     */
+    async processExcelFile(filePath: string): Promise<ParseResult> {
+        const errors: string[] = [];
+        let processedCount = 0;
+        let totalRows = 0;
+
+        try {
+            // 1. Read File from Disk (Stream safe for larger files)
+            if (!fs.existsSync(filePath)) {
+                throw new Error(`File not found at path: ${filePath}`);
+            }
+
+            const fileBuffer = fs.readFileSync(filePath);
+            const workbook = XLSX.read(fileBuffer, { type: "buffer" });
+            for (const sheetName of workbook.SheetNames) {
+                const worksheet = workbook.Sheets[sheetName];
+                if (!worksheet) continue;
+
+                // 2. Convert to JSON (typing loose here because inputs are unpredictable)
+                const jsonData = XLSX.utils.sheet_to_json<any>(worksheet, {
+                    defval: "",
+                    raw: false, // Force strings to avoid date parsing issues
+                });
+
+                totalRows += jsonData.length;
+                let currentSid: string | null = null;
+
+                // 3. Iterate rows for this sheet
+                for (let i = 0; i < jsonData.length; i++) {
+                    const row = jsonData[i];
+                    const rowNum = i + 2; // +2 because index is 0-based and Excel has a header
+
+                    try {
+                        // --- PARENT SYSTEM LOGIC ---
+                        if (row.SID && row.SID.trim() !== "") {
+                            const sid = row.SID.trim();
+                            currentSid = sid;
+
+                            const dbVersion = row['DB Version (from Tx DB02)'] || row['Databse'];
+                            const osType = row['OS Type'] || row['OS'];
+                            const mainProduct = row['Main Product'] ? row['Main Product'].trim() : null;
+
+                            await prisma.system.upsert({
+                                where: { sid },
+                                update: {
+                                    mainProduct,
+                                    dbVersion,
+                                    osType,
+                                    osVersion: row['OS version'],
+                                    osPatch: row['OS Patch'],
+                                    kernelRelease: row['Kernel Release'],
+                                    dbslVersion: row['DBSL Version'],
+                                    dbslPatchLevel: row['DBSL Patch Level'],
+                                    vmJavaVersion: row['VM Java Version'],
+                                    vmRuntimeVersion: row['VM Runtime Version'],
+                                    javaKernelVersion: row['Java Kernel Version'],
+                                },
+                                create: {
+                                    sid,
+                                    mainProduct,
+                                    dbVersion,
+                                    osType,
+                                    osVersion: row['OS version'],
+                                    osPatch: row['OS Patch'],
+                                    kernelRelease: row['Kernel Release'],
+                                    dbslVersion: row['DBSL Version'],
+                                    dbslPatchLevel: row['DBSL Patch Level'],
+                                    vmJavaVersion: row['VM Java Version'],
+                                    vmRuntimeVersion: row['VM Runtime Version'],
+                                    javaKernelVersion: row['Java Kernel Version'],
+                                },
+                            });
+                        }
+
+                        // --- CHILD COMPONENT LOGIC ---
+                        if (currentSid) {
+                            // Check ABAP
+                            if (row.Component) {
+                                await prisma.abapComponent.create({
+                                    data: {
+                                        systemSid: currentSid,
+                                        component: row.Component,
+                                        release: row.Release || "",
+                                        spLevel: row["SP-Level"]?.toString(),
+                                        supportPackage: row["Support Package"],
+                                        shortDescription: row["Short Description of Components"],
+                                    },
+                                });
+                                processedCount++;
+                            }
+                            // Check JAVA
+                            else if (row.Name) {
+                                await prisma.javaComponent.create({
+                                    data: {
+                                        systemSid: currentSid,
+                                        name: row.Name,
+                                        vendor: row.Vendor,
+                                        version: row.Version || "",
+                                        location: row.Location,
+                                    },
+                                });
+                                processedCount++;
+                            }
+                        }
+                    } catch (rowError) {
+                        // SELF HEALING: Capture error, log it, but DO NOT STOP the loop
+                        const msg = `Sheet ${sheetName} - Row ${rowNum} Error (SID: ${currentSid}): ${rowError instanceof Error ? rowError.message : 'Unknown'}`;
+                        console.error(msg);
+                        errors.push(msg);
+                    }
+                }
+            }
+
+            return { success: true, totalRows, processedCount, errors };
+
+        } catch (err) {
+            // Critical failure (e.g., file corrupt)
+            console.error("Critical Parser Failure", err);
+            throw err; // Rethrow to let BullMQ know the job failed
+        }
+    }
+}
+
+export default new ClientFileService();
+
+================
+File: apps/clien-file-service/src/utils/APIError.ts
+================
+export default class APIError extends Error {
+    statusCode: number;
+    isOperational: boolean;
+
+    constructor(statusCode: number, message: string, isOperational = true, stack = "") {
+        super(message);
+        this.statusCode = statusCode;
+        this.isOperational = isOperational;
+        if (stack) this.stack = stack;
+        else Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+================
+File: apps/clien-file-service/src/utils/logger.ts
+================
+import pino from "pino"
+import { env } from "../config/env"
+
+const logger = env.NODE_ENV === "production"
+    ? pino({
+        level: env.LOG_LEVEL,
+        formatters: {
+            level(label) {
+                return { level: label };
+            },
+        },
+    })
+    : pino({
+        level: env.LOG_LEVEL,
+        transport: {
+            target: 'pino-pretty',
+            options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+                ignore: 'pid,hostname',
+            },
+        },
+    });
+
+export { logger };
+
+================
+File: apps/clien-file-service/.gitignore
+================
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+================
+File: apps/clien-file-service/prisma.config.ts
+================
+// This file was generated by Prisma, and assumes you have installed the following:
+// npm install --save-dev prisma dotenv
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: process.env["DATABASE_URL"],
+  },
+});
+
+================
+File: apps/docs/app/globals.css
+================
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.imgDark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+
+  .imgLight {
+    display: none;
+  }
+  .imgDark {
+    display: unset;
+  }
+}
+
+================
+File: apps/docs/app/layout.tsx
+================
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import "./globals.css";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+});
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+});
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        {children}
+      </body>
+    </html>
+  );
+}
+
+================
+File: apps/docs/app/page.module.css
+================
+.page {
+  --gray-rgb: 0, 0, 0;
+  --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
+  --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
+
+  --button-primary-hover: #383838;
+  --button-secondary-hover: #f2f2f2;
+
+  display: grid;
+  grid-template-rows: 20px 1fr 20px;
+  align-items: center;
+  justify-items: center;
+  min-height: 100svh;
+  padding: 80px;
+  gap: 64px;
+  font-synthesis: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .page {
+    --gray-rgb: 255, 255, 255;
+    --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
+    --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
+
+    --button-primary-hover: #ccc;
+    --button-secondary-hover: #1a1a1a;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  grid-row-start: 2;
+}
+
+.main ol {
+  font-family: var(--font-geist-mono);
+  padding-left: 0;
+  margin: 0;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: -0.01em;
+  list-style-position: inside;
+}
+
+.main li:not(:last-of-type) {
+  margin-bottom: 8px;
+}
+
+.main code {
+  font-family: inherit;
+  background: var(--gray-alpha-100);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.ctas {
+  display: flex;
+  gap: 16px;
+}
+
+.ctas a {
+  appearance: none;
+  border-radius: 128px;
+  height: 48px;
+  padding: 0 20px;
+  font-family: var(--font-geist-sans);
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+a.primary {
+  background: var(--foreground);
+  color: var(--background);
+  gap: 8px;
+}
+
+a.secondary {
+  border-color: var(--gray-alpha-200);
+  min-width: 180px;
+}
+
+button.secondary {
+  appearance: none;
+  border-radius: 128px;
+  height: 48px;
+  padding: 0 20px;
+  font-family: var(--font-geist-sans);
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+  background: transparent;
+  border-color: var(--gray-alpha-200);
+  min-width: 180px;
+}
+
+.footer {
+  font-family: var(--font-geist-sans);
+  grid-row-start: 3;
+  display: flex;
+  gap: 24px;
+}
+
+.footer a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer img {
+  flex-shrink: 0;
+}
+
+/* Enable hover only on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  a.primary:hover {
+    background: var(--button-primary-hover);
+    border-color: transparent;
+  }
+
+  a.secondary:hover {
+    background: var(--button-secondary-hover);
+    border-color: transparent;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 32px;
+    padding-bottom: 80px;
+  }
+
+  .main {
+    align-items: center;
+  }
+
+  .main ol {
+    text-align: center;
+  }
+
+  .ctas {
+    flex-direction: column;
+  }
+
+  .ctas a {
+    font-size: 14px;
+    height: 40px;
+    padding: 0 16px;
+  }
+
+  a.secondary {
+    min-width: auto;
+  }
+
+  .footer {
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .logo {
+    filter: invert();
+  }
+}
+
+================
+File: apps/docs/app/page.tsx
+================
+import Image, { type ImageProps } from "next/image";
+import { Button } from "@repo/ui/button";
+import styles from "./page.module.css";
+
+type Props = Omit<ImageProps, "src"> & {
+  srcLight: string;
+  srcDark: string;
+};
+
+const ThemeImage = (props: Props) => {
+  const { srcLight, srcDark, ...rest } = props;
+
+  return (
+    <>
+      <Image {...rest} src={srcLight} className="imgLight" />
+      <Image {...rest} src={srcDark} className="imgDark" />
+    </>
+  );
+};
+
+export default function Home() {
+  return (
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <ThemeImage
+          className={styles.logo}
+          srcLight="turborepo-dark.svg"
+          srcDark="turborepo-light.svg"
+          alt="Turborepo logo"
+          width={180}
+          height={38}
+          priority
+        />
+        <ol>
+          <li>
+            Get started by editing <code>apps/docs/app/page.tsx</code>
+          </li>
+          <li>Save and see your changes instantly.</li>
+        </ol>
+
+        <div className={styles.ctas}>
+          <a
+            className={styles.primary}
+            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className={styles.logo}
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={20}
+              height={20}
+            />
+            Deploy now
+          </a>
+          <a
+            href="https://turborepo.com/docs?utm_source"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.secondary}
+          >
+            Read our docs
+          </a>
+        </div>
+        <Button appName="docs" className={styles.secondary}>
+          Open alert
+        </Button>
+      </main>
+      <footer className={styles.footer}>
+        <a
+          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/window.svg"
+            alt="Window icon"
+            width={16}
+            height={16}
+          />
+          Examples
+        </a>
+        <a
+          href="https://turborepo.com?utm_source=create-turbo"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/globe.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Go to turborepo.com →
+        </a>
+      </footer>
+    </div>
+  );
+}
+
+================
+File: apps/docs/public/file-text.svg
+================
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 13.5V6.5V5.41421C14.5 5.149 14.3946 4.89464 14.2071 4.70711L9.79289 0.292893C9.60536 0.105357 9.351 0 9.08579 0H8H3H1.5V1.5V13.5C1.5 14.8807 2.61929 16 4 16H12C13.3807 16 14.5 14.8807 14.5 13.5ZM13 13.5V6.5H9.5H8V5V1.5H3V13.5C3 14.0523 3.44772 14.5 4 14.5H12C12.5523 14.5 13 14.0523 13 13.5ZM9.5 5V2.12132L12.3787 5H9.5ZM5.13 5.00062H4.505V6.25062H5.13H6H6.625V5.00062H6H5.13ZM4.505 8H5.13H11H11.625V9.25H11H5.13H4.505V8ZM5.13 11H4.505V12.25H5.13H11H11.625V11H11H5.13Z" fill="#666666"/>
+</svg>
+
+================
+File: apps/docs/public/globe.svg
+================
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_868_525)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10.268 14.0934C11.9051 13.4838 13.2303 12.2333 13.9384 10.6469C13.1192 10.7941 12.2138 10.9111 11.2469 10.9925C11.0336 12.2005 10.695 13.2621 10.268 14.0934ZM8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16ZM8.48347 14.4823C8.32384 14.494 8.16262 14.5 8 14.5C7.83738 14.5 7.67616 14.494 7.51654 14.4823C7.5132 14.4791 7.50984 14.4759 7.50647 14.4726C7.2415 14.2165 6.94578 13.7854 6.67032 13.1558C6.41594 12.5744 6.19979 11.8714 6.04101 11.0778C6.67605 11.1088 7.33104 11.125 8 11.125C8.66896 11.125 9.32395 11.1088 9.95899 11.0778C9.80021 11.8714 9.58406 12.5744 9.32968 13.1558C9.05422 13.7854 8.7585 14.2165 8.49353 14.4726C8.49016 14.4759 8.4868 14.4791 8.48347 14.4823ZM11.4187 9.72246C12.5137 9.62096 13.5116 9.47245 14.3724 9.28806C14.4561 8.87172 14.5 8.44099 14.5 8C14.5 7.55901 14.4561 7.12828 14.3724 6.71194C13.5116 6.52755 12.5137 6.37904 11.4187 6.27753C11.4719 6.83232 11.5 7.40867 11.5 8C11.5 8.59133 11.4719 9.16768 11.4187 9.72246ZM10.1525 6.18401C10.2157 6.75982 10.25 7.36805 10.25 8C10.25 8.63195 10.2157 9.24018 10.1525 9.81598C9.46123 9.85455 8.7409 9.875 8 9.875C7.25909 9.875 6.53877 9.85455 5.84749 9.81598C5.7843 9.24018 5.75 8.63195 5.75 8C5.75 7.36805 5.7843 6.75982 5.84749 6.18401C6.53877 6.14545 7.25909 6.125 8 6.125C8.74091 6.125 9.46123 6.14545 10.1525 6.18401ZM11.2469 5.00748C12.2138 5.08891 13.1191 5.20593 13.9384 5.35306C13.2303 3.7667 11.9051 2.51622 10.268 1.90662C10.695 2.73788 11.0336 3.79953 11.2469 5.00748ZM8.48347 1.51771C8.4868 1.52089 8.49016 1.52411 8.49353 1.52737C8.7585 1.78353 9.05422 2.21456 9.32968 2.84417C9.58406 3.42562 9.80021 4.12856 9.95899 4.92219C9.32395 4.89118 8.66896 4.875 8 4.875C7.33104 4.875 6.67605 4.89118 6.04101 4.92219C6.19978 4.12856 6.41594 3.42562 6.67032 2.84417C6.94578 2.21456 7.2415 1.78353 7.50647 1.52737C7.50984 1.52411 7.51319 1.52089 7.51653 1.51771C7.67615 1.50597 7.83738 1.5 8 1.5C8.16262 1.5 8.32384 1.50597 8.48347 1.51771ZM5.73202 1.90663C4.0949 2.51622 2.76975 3.7667 2.06159 5.35306C2.88085 5.20593 3.78617 5.08891 4.75309 5.00748C4.96639 3.79953 5.30497 2.73788 5.73202 1.90663ZM4.58133 6.27753C3.48633 6.37904 2.48837 6.52755 1.62761 6.71194C1.54392 7.12828 1.5 7.55901 1.5 8C1.5 8.44099 1.54392 8.87172 1.62761 9.28806C2.48837 9.47245 3.48633 9.62096 4.58133 9.72246C4.52807 9.16768 4.5 8.59133 4.5 8C4.5 7.40867 4.52807 6.83232 4.58133 6.27753ZM4.75309 10.9925C3.78617 10.9111 2.88085 10.7941 2.06159 10.6469C2.76975 12.2333 4.0949 13.4838 5.73202 14.0934C5.30497 13.2621 4.96639 12.2005 4.75309 10.9925Z" fill="#666666"/>
+</g>
+<defs>
+<clipPath id="clip0_868_525">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
+================
+File: apps/docs/public/next.svg
+================
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+
+================
+File: apps/docs/public/turborepo-dark.svg
+================
+<svg width="473" height="76" viewBox="0 0 473 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M130.998 30.6565V22.3773H91.0977V30.6565H106.16V58.1875H115.935V30.6565H130.998Z" fill="black"/>
+<path d="M153.542 58.7362C165.811 58.7362 172.544 52.5018 172.544 42.2275V22.3773H162.768V41.2799C162.768 47.0155 159.776 50.2574 153.542 50.2574C147.307 50.2574 144.315 47.0155 144.315 41.2799V22.3773H134.539V42.2275C134.539 52.5018 141.272 58.7362 153.542 58.7362Z" fill="black"/>
+<path d="M187.508 46.3173H197.234L204.914 58.1875H216.136L207.458 45.2699C212.346 43.5243 215.338 39.634 215.338 34.3473C215.338 26.6665 209.603 22.3773 200.874 22.3773H177.732V58.1875H187.508V46.3173ZM187.508 38.5867V30.5568H200.376C203.817 30.5568 205.712 32.053 205.712 34.5967C205.712 36.9907 203.817 38.5867 200.376 38.5867H187.508Z" fill="black"/>
+<path d="M219.887 58.1875H245.472C253.452 58.1875 258.041 54.397 258.041 48.0629C258.041 43.8235 255.348 40.9308 252.156 39.634C254.35 38.5867 257.043 36.0929 257.043 32.1528C257.043 25.8187 252.555 22.3773 244.625 22.3773H219.887V58.1875ZM229.263 36.3922V30.3074H243.627C246.32 30.3074 247.817 31.3548 247.817 33.3498C247.817 35.3448 246.32 36.3922 243.627 36.3922H229.263ZM229.263 43.7238H244.525C247.168 43.7238 248.615 45.0205 248.615 46.9657C248.615 48.9108 247.168 50.2075 244.525 50.2075H229.263V43.7238Z" fill="black"/>
+<path d="M281.942 21.7788C269.423 21.7788 260.396 29.6092 260.396 40.2824C260.396 50.9557 269.423 58.786 281.942 58.786C294.461 58.786 303.438 50.9557 303.438 40.2824C303.438 29.6092 294.461 21.7788 281.942 21.7788ZM281.942 30.2575C288.525 30.2575 293.463 34.1478 293.463 40.2824C293.463 46.417 288.525 50.3073 281.942 50.3073C275.359 50.3073 270.421 46.417 270.421 40.2824C270.421 34.1478 275.359 30.2575 281.942 30.2575Z" fill="black"/>
+<path d="M317.526 46.3173H327.251L334.932 58.1875H346.154L337.476 45.2699C342.364 43.5243 345.356 39.634 345.356 34.3473C345.356 26.6665 339.62 22.3773 330.892 22.3773H307.75V58.1875H317.526V46.3173ZM317.526 38.5867V30.5568H330.394C333.835 30.5568 335.73 32.053 335.73 34.5967C335.73 36.9907 333.835 38.5867 330.394 38.5867H317.526Z" fill="black"/>
+<path d="M349.904 22.3773V58.1875H384.717V49.9083H359.48V44.0729H381.874V35.9932H359.48V30.6565H384.717V22.3773H349.904Z" fill="black"/>
+<path d="M399.204 46.7662H412.221C420.95 46.7662 426.685 42.5767 426.685 34.5967C426.685 26.5668 420.95 22.3773 412.221 22.3773H389.428V58.1875H399.204V46.7662ZM399.204 38.6365V30.5568H411.673C415.164 30.5568 417.059 32.053 417.059 34.5967C417.059 37.0904 415.164 38.6365 411.673 38.6365H399.204Z" fill="black"/>
+<path d="M450.948 21.7788C438.43 21.7788 429.402 29.6092 429.402 40.2824C429.402 50.9557 438.43 58.786 450.948 58.786C463.467 58.786 472.444 50.9557 472.444 40.2824C472.444 29.6092 463.467 21.7788 450.948 21.7788ZM450.948 30.2575C457.532 30.2575 462.469 34.1478 462.469 40.2824C462.469 46.417 457.532 50.3073 450.948 50.3073C444.365 50.3073 439.427 46.417 439.427 40.2824C439.427 34.1478 444.365 30.2575 450.948 30.2575Z" fill="black"/>
+<path d="M38.5017 18.0956C27.2499 18.0956 18.0957 27.2498 18.0957 38.5016C18.0957 49.7534 27.2499 58.9076 38.5017 58.9076C49.7535 58.9076 58.9077 49.7534 58.9077 38.5016C58.9077 27.2498 49.7535 18.0956 38.5017 18.0956ZM38.5017 49.0618C32.6687 49.0618 27.9415 44.3346 27.9415 38.5016C27.9415 32.6686 32.6687 27.9414 38.5017 27.9414C44.3347 27.9414 49.0619 32.6686 49.0619 38.5016C49.0619 44.3346 44.3347 49.0618 38.5017 49.0618Z" fill="black"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M40.2115 14.744V7.125C56.7719 8.0104 69.9275 21.7208 69.9275 38.5016C69.9275 55.2824 56.7719 68.989 40.2115 69.8782V62.2592C52.5539 61.3776 62.3275 51.0644 62.3275 38.5016C62.3275 25.9388 52.5539 15.6256 40.2115 14.744ZM20.5048 54.0815C17.233 50.3043 15.124 45.4935 14.7478 40.2115H7.125C7.5202 47.6025 10.4766 54.3095 15.1088 59.4737L20.501 54.0815H20.5048ZM36.7916 69.8782V62.2592C31.5058 61.883 26.695 59.7778 22.9178 56.5022L17.5256 61.8944C22.6936 66.5304 29.4006 69.483 36.7878 69.8782H36.7916Z" fill="url(#paint0_linear_2028_278)"/>
+<defs>
+<linearGradient id="paint0_linear_2028_278" x1="41.443" y1="11.5372" x2="10.5567" y2="42.4236" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0096FF"/>
+<stop offset="1" stop-color="#FF1E56"/>
+</linearGradient>
+</defs>
+</svg>
+
+================
+File: apps/docs/public/turborepo-light.svg
+================
+<svg width="473" height="76" viewBox="0 0 473 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M130.998 30.6566V22.3773H91.0977V30.6566H106.16V58.1876H115.935V30.6566H130.998Z" fill="white"/>
+<path d="M153.542 58.7362C165.811 58.7362 172.544 52.5018 172.544 42.2276V22.3773H162.768V41.2799C162.768 47.0156 159.776 50.2574 153.542 50.2574C147.307 50.2574 144.315 47.0156 144.315 41.2799V22.3773H134.539V42.2276C134.539 52.5018 141.272 58.7362 153.542 58.7362Z" fill="white"/>
+<path d="M187.508 46.3173H197.234L204.914 58.1876H216.136L207.458 45.2699C212.346 43.5243 215.338 39.6341 215.338 34.3473C215.338 26.6666 209.603 22.3773 200.874 22.3773H177.732V58.1876H187.508V46.3173ZM187.508 38.5867V30.5568H200.376C203.817 30.5568 205.712 32.0531 205.712 34.5967C205.712 36.9907 203.817 38.5867 200.376 38.5867H187.508Z" fill="white"/>
+<path d="M219.887 58.1876H245.472C253.452 58.1876 258.041 54.3971 258.041 48.0629C258.041 43.8236 255.348 40.9308 252.156 39.6341C254.35 38.5867 257.043 36.0929 257.043 32.1528C257.043 25.8187 252.555 22.3773 244.625 22.3773H219.887V58.1876ZM229.263 36.3922V30.3074H243.627C246.32 30.3074 247.817 31.3548 247.817 33.3498C247.817 35.3448 246.32 36.3922 243.627 36.3922H229.263ZM229.263 43.7238H244.525C247.168 43.7238 248.615 45.0206 248.615 46.9657C248.615 48.9108 247.168 50.2076 244.525 50.2076H229.263V43.7238Z" fill="white"/>
+<path d="M281.942 21.7788C269.423 21.7788 260.396 29.6092 260.396 40.2824C260.396 50.9557 269.423 58.7861 281.942 58.7861C294.461 58.7861 303.438 50.9557 303.438 40.2824C303.438 29.6092 294.461 21.7788 281.942 21.7788ZM281.942 30.2576C288.525 30.2576 293.463 34.1478 293.463 40.2824C293.463 46.4171 288.525 50.3073 281.942 50.3073C275.359 50.3073 270.421 46.4171 270.421 40.2824C270.421 34.1478 275.359 30.2576 281.942 30.2576Z" fill="white"/>
+<path d="M317.526 46.3173H327.251L334.932 58.1876H346.154L337.476 45.2699C342.364 43.5243 345.356 39.6341 345.356 34.3473C345.356 26.6666 339.62 22.3773 330.892 22.3773H307.75V58.1876H317.526V46.3173ZM317.526 38.5867V30.5568H330.394C333.835 30.5568 335.73 32.0531 335.73 34.5967C335.73 36.9907 333.835 38.5867 330.394 38.5867H317.526Z" fill="white"/>
+<path d="M349.904 22.3773V58.1876H384.717V49.9083H359.48V44.0729H381.874V35.9932H359.48V30.6566H384.717V22.3773H349.904Z" fill="white"/>
+<path d="M399.204 46.7662H412.221C420.95 46.7662 426.685 42.5767 426.685 34.5967C426.685 26.5668 420.95 22.3773 412.221 22.3773H389.428V58.1876H399.204V46.7662ZM399.204 38.6366V30.5568H411.673C415.164 30.5568 417.059 32.0531 417.059 34.5967C417.059 37.0904 415.164 38.6366 411.673 38.6366H399.204Z" fill="white"/>
+<path d="M450.948 21.7788C438.43 21.7788 429.402 29.6092 429.402 40.2824C429.402 50.9557 438.43 58.7861 450.948 58.7861C463.467 58.7861 472.444 50.9557 472.444 40.2824C472.444 29.6092 463.467 21.7788 450.948 21.7788ZM450.948 30.2576C457.532 30.2576 462.469 34.1478 462.469 40.2824C462.469 46.4171 457.532 50.3073 450.948 50.3073C444.365 50.3073 439.427 46.4171 439.427 40.2824C439.427 34.1478 444.365 30.2576 450.948 30.2576Z" fill="white"/>
+<path d="M38.5017 18.0956C27.2499 18.0956 18.0957 27.2498 18.0957 38.5016C18.0957 49.7534 27.2499 58.9076 38.5017 58.9076C49.7535 58.9076 58.9077 49.7534 58.9077 38.5016C58.9077 27.2498 49.7535 18.0956 38.5017 18.0956ZM38.5017 49.0618C32.6687 49.0618 27.9415 44.3346 27.9415 38.5016C27.9415 32.6686 32.6687 27.9414 38.5017 27.9414C44.3347 27.9414 49.0619 32.6686 49.0619 38.5016C49.0619 44.3346 44.3347 49.0618 38.5017 49.0618Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M40.2115 14.744V7.125C56.7719 8.0104 69.9275 21.7208 69.9275 38.5016C69.9275 55.2824 56.7719 68.989 40.2115 69.8782V62.2592C52.5539 61.3776 62.3275 51.0644 62.3275 38.5016C62.3275 25.9388 52.5539 15.6256 40.2115 14.744ZM20.5048 54.0815C17.233 50.3043 15.124 45.4935 14.7478 40.2115H7.125C7.5202 47.6025 10.4766 54.3095 15.1088 59.4737L20.501 54.0815H20.5048ZM36.7916 69.8782V62.2592C31.5058 61.883 26.695 59.7778 22.9178 56.5022L17.5256 61.8944C22.6936 66.5304 29.4006 69.483 36.7878 69.8782H36.7916Z" fill="url(#paint0_linear_2028_477)"/>
+<defs>
+<linearGradient id="paint0_linear_2028_477" x1="41.443" y1="11.5372" x2="10.5567" y2="42.4236" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0096FF"/>
+<stop offset="1" stop-color="#FF1E56"/>
+</linearGradient>
+</defs>
+</svg>
+
+================
+File: apps/docs/public/vercel.svg
+================
+<svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_977_547)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10.5 3L18.5 17H2.5L10.5 3Z" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_977_547">
+<rect width="16" height="16" fill="white" transform="translate(2.5 2)"/>
+</clipPath>
+</defs>
+</svg>
+
+================
+File: apps/docs/public/window.svg
+================
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5H14.5V12.5C14.5 13.0523 14.0523 13.5 13.5 13.5H2.5C1.94772 13.5 1.5 13.0523 1.5 12.5V2.5ZM0 1H1.5H14.5H16V2.5V12.5C16 13.8807 14.8807 15 13.5 15H2.5C1.11929 15 0 13.8807 0 12.5V2.5V1ZM3.75 5.5C4.16421 5.5 4.5 5.16421 4.5 4.75C4.5 4.33579 4.16421 4 3.75 4C3.33579 4 3 4.33579 3 4.75C3 5.16421 3.33579 5.5 3.75 5.5ZM7 4.75C7 5.16421 6.66421 5.5 6.25 5.5C5.83579 5.5 5.5 5.16421 5.5 4.75C5.5 4.33579 5.83579 4 6.25 4C6.66421 4 7 4.33579 7 4.75ZM8.75 5.5C9.16421 5.5 9.5 5.16421 9.5 4.75C9.5 4.33579 9.16421 4 8.75 4C8.33579 4 8 4.33579 8 4.75C8 5.16421 8.33579 5.5 8.75 5.5Z" fill="#666666"/>
+</svg>
+
+================
+File: apps/docs/.gitignore
+================
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files (can opt-in for commiting if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+================
+File: apps/docs/eslint.config.js
+================
+import { nextJsConfig } from "@repo/eslint-config/next-js";
+
+/** @type {import("eslint").Linter.Config[]} */
+export default nextJsConfig;
+
+================
+File: apps/docs/next.config.js
+================
+/** @type {import('next').NextConfig} */
+const nextConfig = {};
+
+export default nextConfig;
+
+================
+File: apps/docs/package.json
+================
+{
+  "name": "docs",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint --max-warnings 0",
+    "check-types": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/ui": "workspace:*",
+    "next": "16.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "eslint": "^9.39.1",
+    "typescript": "5.9.2"
+  }
+}
+
+================
+File: apps/docs/README.md
+================
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+================
+File: apps/docs/tsconfig.json
+================
+{
+  "extends": "@repo/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    "next.config.js",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+
+================
+File: apps/gateway/tsconfig.json
+================
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "commonjs",
+        "outDir": "./build",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "build"
+    ]
+}
+
+================
+File: apps/sap-core-service/src/config/db.ts
+================
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import { env } from "./env";
+
+const pool = new Pool({
+    connectionString: env.DATABASE_URL,
+});
+
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
+
+export default prisma;
+
+================
+File: apps/sap-core-service/src/controllers/scan.controller.ts
+================
+import { Request, Response } from "express";
+import { runVulnerabilityScan } from "../services/matcher.service";
+
+export async function scan(req: Request, res: Response) {
+    const result = await runVulnerabilityScan();
+    res.json({
+        status: "completed",
+        matches: result.matches,
+    });
+}
+
+================
+File: apps/sap-core-service/src/controllers/summary.controller.ts
+================
+import { Request, Response } from "express";
+import prisma from "../config/db";
+
+export async function vulnerabilitySummary(
+    req: Request,
+    res: Response
+) {
+    const summary = await prisma.sapVulnerability.groupBy({
+        by: ["systemId"],
+        _count: {
+            _all: true,
+        },
+    });
+
+    const systems = await prisma.system.findMany({
+        where: {
+            sid: { in: summary.map((s: (typeof summary)[number]) => s.systemId) },
+        },
+        select: {
+            sid: true,
+        },
+    });
+
+    const result = summary.map((s: (typeof summary)[number]) => {
+        const system = systems.find(
+            (sys: (typeof systems)[number]) => sys.sid === s.systemId
+        );
+        return {
+            sid: system?.sid,
+            vulnerabilities: s._count._all,
+        };
+    });
+
+    res.json(result);
+}
+
+================
+File: apps/sap-core-service/src/controllers/system.controller.ts
+================
+import { Request, Response } from "express";
+import prisma from "../config/db";
+
+export async function listSystems(req: Request, res: Response) {
+    const systems = await prisma.system.findMany({
+        select: {
+            id: true,
+            sid: true,
+            landscape: true,
+            vendor: true,
+            location: true,
+        },
+    });
+
+    res.json(systems);
+}
+
+================
+File: apps/sap-core-service/src/controllers/vulnerability.controller.ts
+================
+import { Request, Response } from "express";
+import prisma from "../config/db";
+
+export async function getSystemVulnerabilities(
+    req: Request,
+    res: Response
+) {
+    const { sid } = req.params;
+
+    // 1️⃣ Find system
+    const system = await prisma.system.findUnique({
+        where: { sid },
+    });
+
+    if (!system) {
+        return res.status(404).json({ message: "System not found" });
+    }
+
+    // 2️⃣ Fetch vulnerabilities
+    const vulnerabilities = await prisma.sapVulnerability.findMany({
+        where: { systemId: system.sid },
+        include: {
+            note: {
+                select: {
+                    noteNumber: true,
+                    priority: true,
+                    cvssScore: true,
+                    cvssVector: true,
+                },
+            },
+        },
+    });
+
+    // 3️⃣ Shape response
+    const response = vulnerabilities.map((v: (typeof vulnerabilities)[number]) => ({
+        component: v.componentName,
+        installedVersion: v.componentVersion,
+        noteNumber: v.noteNumber,
+        priority: v.note?.priority,
+        cvssScore: v.note?.cvssScore,
+        affectedRange: {
+            from: v.fromVersion,
+            to: v.toVersion,
+        },
+    }));
+
+    res.json({
+        system: sid,
+        totalVulnerabilities: response.length,
+        vulnerabilities: response,
+    });
+}
+
+================
+File: apps/sap-core-service/src/middleware/errorHandler.ts
+================
+import { Request, Response, NextFunction } from "express";
+import APIError from "../utils/APIError";
+
+export const errorConverter = (err: any, req: Request, res: Response, next: NextFunction) => {
+    let error = err;
+
+    if (!(error instanceof APIError)) {
+        const statusCode = error.statusCode || 500;
+        const message = error.message || "Internal server error";
+        error = new APIError(statusCode, message, false);
+    }
+
+    next(error);
+};
+
+export const errorHandler = (err: APIError, req: Request, res: Response, next: NextFunction) => {
+    const response: any = {
+        code: err.statusCode,
+        message: err.message,
+    };
+
+    if (process.env.NODE_ENV === "development") {
+        response.stack = err.stack;
+    }
+
+    res.status(err.statusCode).json(response);
+};
+
+================
+File: apps/sap-core-service/src/middleware/rateLimit.ts
+================
+import rateLimit from "express-rate-limit";
+
+export default rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+================
+File: apps/sap-core-service/src/routes/health.routes.ts
+================
+import { Router } from "express"
+
+const router = Router()
+
+router.get("/", (req, res) => { res.json({ status: "ok" }) })
+
+export default router
+
+================
+File: apps/sap-core-service/src/routes/index.ts
+================
+import { Router } from "express";
+import { listSystems } from "../controllers/system.controller";
+import { getSystemVulnerabilities } from "../controllers/vulnerability.controller";
+import { vulnerabilitySummary } from "../controllers/summary.controller";
+
+const router = Router();
+
+router.get("/systems", listSystems);
+router.get("/systems/:sid/vulnerabilities", getSystemVulnerabilities);
+router.get("/vulnerabilities/summary", vulnerabilitySummary);
+
+export default router;
+
+================
+File: apps/sap-core-service/src/utils/APIError.ts
+================
+export default class APIError extends Error {
+    statusCode: number;
+    isOperational: boolean;
+
+    constructor(statusCode: number, message: string, isOperational = true, stack = "") {
+        super(message);
+        this.statusCode = statusCode;
+        this.isOperational = isOperational;
+        if (stack) this.stack = stack;
+        else Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+================
+File: apps/sap-core-service/src/utils/logger.ts
+================
+import pino from "pino"
+import { env } from "../config/env"
+
+const logger = env.NODE_ENV === "production"
+    ? pino({
+        level: env.LOG_LEVEL,
+        formatters: {
+            level(label) {
+                return { level: label };
+            },
+        },
+    })
+    : pino({
+        level: env.LOG_LEVEL,
+        transport: {
+            target: 'pino-pretty',
+            options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+                ignore: 'pid,hostname',
+            },
+        },
+    });
+
+export { logger };
+
+================
+File: apps/sap-core-service/src/utils/versionMatcher.ts
+================
+function normalize(v?: string) {
+    if (!v) return [];
+    return v.split(".").map((n) => parseInt(n, 10));
+}
+
+export function isVersionInRange(
+    installed: string,
+    from?: string,
+    to?: string
+): boolean {
+    const i = normalize(installed);
+    const f = normalize(from);
+    const t = normalize(to);
+
+    const gte = f.length === 0 || compare(i, f) >= 0;
+    const lte = t.length === 0 || compare(i, t) <= 0;
+
+    return gte && lte;
+}
+
+function compare(a: number[], b: number[]) {
+    const len = Math.max(a.length, b.length);
+    for (let i = 0; i < len; i++) {
+        const x = a[i] ?? 0;
+        const y = b[i] ?? 0;
+        if (x > y) return 1;
+        if (x < y) return -1;
+    }
+    return 0;
+}
+
+================
+File: apps/sap-core-service/.gitignore
+================
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+================
+File: apps/sap-core-service/prisma.config.ts
+================
+// This file was generated by Prisma, and assumes you have installed the following:
+// npm install --save-dev prisma dotenv
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: process.env["DATABASE_URL"],
+  },
+});
+
+================
+File: apps/sap-core-service/tsconfig.json
+================
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./build",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*",
+        "prisma.config.ts",
+        "prisma/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "tests"
+    ]
+}
+
+================
+File: apps/sap-note-service/prisma/migrations/20260102154811_sap_dev_notes/migration.sql
+================
+-- CreateTable
+CREATE TABLE "SapNote" (
+    "id" TEXT NOT NULL,
+    "noteNumber" TEXT NOT NULL,
+    "priority" TEXT,
+    "cvssScore" DOUBLE PRECISION,
+    "cvssVector" TEXT,
+    "confidence" INTEGER NOT NULL,
+    "correction" TEXT,
+    "rawText" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SapNote_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SapNoteComponent" (
+    "id" TEXT NOT NULL,
+    "noteId" TEXT NOT NULL,
+    "component" TEXT NOT NULL,
+    "fromVersion" TEXT,
+    "toVersion" TEXT,
+
+    CONSTRAINT "SapNoteComponent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SapNote_noteNumber_key" ON "SapNote"("noteNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SapNoteComponent_noteId_component_key" ON "SapNoteComponent"("noteId", "component");
+
+-- AddForeignKey
+ALTER TABLE "SapNoteComponent" ADD CONSTRAINT "SapNoteComponent_noteId_fkey" FOREIGN KEY ("noteId") REFERENCES "SapNote"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+================
+File: apps/sap-note-service/prisma/migrations/20260102212013_change_in_title/migration.sql
+================
+-- AlterTable
+ALTER TABLE "SapNote" ADD COLUMN     "title" TEXT;
+
+================
+File: apps/sap-note-service/prisma/migrations/migration_lock.toml
+================
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "postgresql"
+
+================
+File: apps/sap-note-service/src/config/db.ts
+================
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import { env } from "./env";
+
+const pool = new Pool({
+    connectionString: env.DATABASE_URL,
+});
+
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
+
+export default prisma;
+
+================
+File: apps/sap-note-service/src/config/redis.ts
+================
+import IORedis from "ioredis";
+import { env } from "./env";
+
+export const connection = new IORedis(env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+});
+
+================
+File: apps/sap-note-service/src/controllers/upload.controller.ts
+================
+import { Request, Response } from "express";
+import { noteQueue } from "../queues/note.queue";
+
+export async function uploadSapNote(req: Request, res: Response) {
+    const file = req.file!;
+    await noteQueue.add("parse-note", {
+        filePath: file.path,
+    });
+
+    res.json({
+        message: "SAP Note uploaded and queued",
+    });
+}
+
+================
+File: apps/sap-note-service/src/middleware/errorHandler.ts
+================
+import { Request, Response, NextFunction } from "express";
+import APIError from "../utils/APIError";
+
+export const errorConverter = (err: any, req: Request, res: Response, next: NextFunction) => {
+    let error = err;
+
+    if (!(error instanceof APIError)) {
+        const statusCode = error.statusCode || 500;
+        const message = error.message || "Internal server error";
+        error = new APIError(statusCode, message, false);
+    }
+
+    next(error);
+};
+
+export const errorHandler = (err: APIError, req: Request, res: Response, next: NextFunction) => {
+    const response: any = {
+        code: err.statusCode,
+        message: err.message,
+    };
+
+    if (process.env.NODE_ENV === "development") {
+        response.stack = err.stack;
+    }
+
+    res.status(err.statusCode).json(response);
+};
+
+================
+File: apps/sap-note-service/src/middleware/rateLimit.ts
+================
+import rateLimit from "express-rate-limit";
+
+export default rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+================
+File: apps/sap-note-service/src/queues/note.queue.ts
+================
+import { Queue } from "bullmq";
+import { connection } from "../config/redis";
+
+export interface NoteJobPayload {
+    filePath: string;
+}
+
+export const noteQueue = new Queue<NoteJobPayload>(
+    "sap-note-queue",
+    { connection }
+);
+
+================
+File: apps/sap-note-service/src/routes/health.routes.ts
+================
+import { Router } from "express"
+
+const router = Router()
+
+router.get("/", (req, res) => { res.json({ status: "ok" }) })
+
+export default router
+
+================
+File: apps/sap-note-service/src/utils/APIError.ts
+================
+export default class APIError extends Error {
+    statusCode: number;
+    isOperational: boolean;
+
+    constructor(statusCode: number, message: string, isOperational = true, stack = "") {
+        super(message);
+        this.statusCode = statusCode;
+        this.isOperational = isOperational;
+        if (stack) this.stack = stack;
+        else Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+================
+File: apps/sap-note-service/src/utils/logger.ts
+================
+import pino from "pino"
+import { env } from "../config/env"
+
+const logger = env.NODE_ENV === "production"
+    ? pino({
+        level: env.LOG_LEVEL,
+        formatters: {
+            level(label) {
+                return { level: label };
+            },
+        },
+    })
+    : pino({
+        level: env.LOG_LEVEL,
+        transport: {
+            target: 'pino-pretty',
+            options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+                ignore: 'pid,hostname',
+            },
+        },
+    });
+
+export { logger };
+
+================
+File: apps/sap-note-service/src/utils/sectionExtractor.ts
+================
+export function extractSection(
+    text: string,
+    start: RegExp,
+    end?: RegExp
+): string | null {
+    const startMatch = text.search(start);
+    if (startMatch === -1) return null;
+
+    const sliced = text.slice(startMatch);
+    if (!end) return sliced;
+
+    const endMatch = sliced.search(end);
+    return endMatch === -1
+        ? sliced
+        : sliced.slice(0, endMatch);
+}
+
+================
+File: apps/sap-note-service/src/utils/textNormalizer.ts
+================
+export function normalizePdfText(raw: string): string {
+    return raw
+        // remove excessive whitespace
+        .replace(/\r/g, "")
+        .replace(/[ \t]+/g, " ")
+        // fix broken line sentences
+        .replace(/([a-z])\n([a-z])/gi, "$1 $2")
+        // normalize line breaks
+        .replace(/\n{2,}/g, "\n\n")
+        .trim();
+}
+
+================
+File: apps/sap-note-service/.gitignore
+================
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+================
+File: apps/sap-note-service/prisma.config.ts
+================
+// This file was generated by Prisma, and assumes you have installed the following:
+// npm install --save-dev prisma dotenv
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: process.env["DATABASE_URL"],
+  },
+});
+
+================
+File: apps/sap-note-service/tsconfig.json
+================
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./build",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*",
+        "prisma.config.ts",
+        "prisma/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "tests"
+    ]
+}
+
+================
+File: apps/user-service/src/database/models/UserModel.ts
+================
+import mongoose, { Schema, Document } from "mongoose";
+import validator from "validator";
+
+export interface IUser extends Document {
+    name: string;
+    email: string;
+    password: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const UserSchema: Schema = new Schema(
+    {
+        name: {
+            type: String,
+            trim: true,
+            required: [true, "Name must be provided"],
+            minlength: 3,
+        },
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+            validate: [validator.isEmail, "Please provide a valid email."],
+        },
+        password: {
+            type: String,
+            trim: false,
+            required: [true, "Password must be provided"],
+            minlength: 8,
+        },
+    },
+    {
+        timestamps: true,
+    }
+);
+
+const User = mongoose.model<IUser>("User", UserSchema);
+export default User;
+
+================
+File: apps/user-service/src/database/connection.ts
+================
+import mongoose from "mongoose"
+import config from "../config/config"
+
+export const connectDB = async (): Promise<void> => {
+    if (!config.MONGO_URI) {
+        throw new Error("Missing MONGO_URI. Set it in apps/user-service/.env (or process.env).")
+    }
+
+    const maxAttempts = 30;
+    const delayMs = 1000;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            console.info(`Connecting to database (${attempt}/${maxAttempts})... ${config.MONGO_URI}`)
+            await mongoose.connect(config.MONGO_URI)
+            console.info("Database connected successfully")
+            return
+        } catch (error) {
+            const isLastAttempt = attempt === maxAttempts
+            console.error(
+                isLastAttempt
+                    ? "Database connection failed (giving up)"
+                    : "Database connection failed (will retry)",
+                error
+            )
+            if (isLastAttempt) throw error
+            await new Promise((resolve) => setTimeout(resolve, delayMs))
+        }
+    }
+}
+
+================
+File: apps/user-service/src/database/index.ts
+================
+import User, { IUser } from "./models/UserModel";
+import { connectDB } from "./connection";
+
+export { User, IUser, connectDB };
+
+================
+File: apps/user-service/src/utils/index.ts
+================
+import bcrypt from "bcryptjs"
+
+class ApiError extends Error {
+    statusCode: number
+    isOperational: boolean
+
+    constructor(
+        statusCode: number,
+        message: string | undefined,
+        isOperational = true,
+        stack = ""
+    ) {
+        super(message)
+        this.statusCode = statusCode
+        this.isOperational = isOperational
+        if (stack) {
+            this.stack = stack
+        }
+        else {
+            Error.captureStackTrace(this, this.constructor)
+        }
+    }
+
+}
+
+const encryptPassword = async (password: string) => {
+    const encryptedPassword = await bcrypt.hash(password, 12);
+    return encryptedPassword;
+};
+
+const isPasswordMatch = async (password: string, userPassword: string) => {
+    const result = await bcrypt.compare(password, userPassword);
+    return result;
+};
+
+export { ApiError, encryptPassword, isPasswordMatch };
+
+================
+File: apps/user-service/src/validation/auth.schema.ts
+================
+import { z } from "zod";
+
+export const registerSchema = z.object({
+    body: z.object({
+        name: z.string().min(3),
+        email: z.string().email(),
+        password: z.string().min(8),
+    }),
+});
+
+export const loginSchema = z.object({
+    body: z.object({
+        email: z.string().email(),
+        password: z.string().min(8),
+    }),
+});
+
+================
+File: apps/user-service/src/server.ts
+================
+import express, { Express } from "express"
+import { Server } from "http"
+import { errorConverter, errorHandler } from "./middleware"
+import { connectDB } from "./database"
+import config from "./config/config"
+import { rabbitMQService } from "./services/rabbitmq.service"
+import userRouter from "./routes/authRoutes";
+const app: Express = express()
+
+let server: Server
+
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(userRouter)
+app.use(errorConverter)
+app.use(errorHandler)
+
+connectDB()
+    .then(() => {
+        server = app.listen(config.PORT, () => {
+            console.log(`Server is running on port ${config.PORT}`)
+        })
+
+        rabbitMQService
+            .init()
+            .then(() => {
+                console.log("Connected to RabbitMQ successfully")
+            })
+            .catch((error: Error) => {
+                console.error("Failed to connect to RabbitMQ:", error)
+            })
+    })
+    .catch((error: Error) => {
+        console.error("Database connection failed:", error)
+    })
+
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection at:", promise, "reason:", reason)
+    if (server) {
+        server.close(() => {
+            process.exit(1)
+        })
+    } else {
+        process.exit(1)
+    }
+})
+
+================
+File: apps/user-service/tsconfig.json
+================
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./build",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "tests"
+    ]
+}
+
+================
+File: apps/web/app/globals.css
+================
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.imgDark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+
+  .imgLight {
+    display: none;
+  }
+  .imgDark {
+    display: unset;
+  }
+}
+
+================
+File: apps/web/app/layout.tsx
+================
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import "./globals.css";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+});
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+});
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        {children}
+      </body>
+    </html>
+  );
+}
+
+================
+File: apps/web/app/page.module.css
+================
+.page {
+  --gray-rgb: 0, 0, 0;
+  --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
+  --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
+
+  --button-primary-hover: #383838;
+  --button-secondary-hover: #f2f2f2;
+
+  display: grid;
+  grid-template-rows: 20px 1fr 20px;
+  align-items: center;
+  justify-items: center;
+  min-height: 100svh;
+  padding: 80px;
+  gap: 64px;
+  font-synthesis: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .page {
+    --gray-rgb: 255, 255, 255;
+    --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
+    --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
+
+    --button-primary-hover: #ccc;
+    --button-secondary-hover: #1a1a1a;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  grid-row-start: 2;
+}
+
+.main ol {
+  font-family: var(--font-geist-mono);
+  padding-left: 0;
+  margin: 0;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: -0.01em;
+  list-style-position: inside;
+}
+
+.main li:not(:last-of-type) {
+  margin-bottom: 8px;
+}
+
+.main code {
+  font-family: inherit;
+  background: var(--gray-alpha-100);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.ctas {
+  display: flex;
+  gap: 16px;
+}
+
+.ctas a {
+  appearance: none;
+  border-radius: 128px;
+  height: 48px;
+  padding: 0 20px;
+  font-family: var(--font-geist-sans);
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+a.primary {
+  background: var(--foreground);
+  color: var(--background);
+  gap: 8px;
+}
+
+a.secondary {
+  border-color: var(--gray-alpha-200);
+  min-width: 180px;
+}
+
+button.secondary {
+  appearance: none;
+  border-radius: 128px;
+  height: 48px;
+  padding: 0 20px;
+  font-family: var(--font-geist-sans);
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+  background: transparent;
+  border-color: var(--gray-alpha-200);
+  min-width: 180px;
+}
+
+.footer {
+  font-family: var(--font-geist-sans);
+  grid-row-start: 3;
+  display: flex;
+  gap: 24px;
+}
+
+.footer a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer img {
+  flex-shrink: 0;
+}
+
+/* Enable hover only on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  a.primary:hover {
+    background: var(--button-primary-hover);
+    border-color: transparent;
+  }
+
+  a.secondary:hover {
+    background: var(--button-secondary-hover);
+    border-color: transparent;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 32px;
+    padding-bottom: 80px;
+  }
+
+  .main {
+    align-items: center;
+  }
+
+  .main ol {
+    text-align: center;
+  }
+
+  .ctas {
+    flex-direction: column;
+  }
+
+  .ctas a {
+    font-size: 14px;
+    height: 40px;
+    padding: 0 16px;
+  }
+
+  a.secondary {
+    min-width: auto;
+  }
+
+  .footer {
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .logo {
+    filter: invert();
+  }
+}
+
+================
+File: apps/web/app/page.tsx
+================
+import Image, { type ImageProps } from "next/image";
+import { Button } from "@repo/ui/button";
+import styles from "./page.module.css";
+
+type Props = Omit<ImageProps, "src"> & {
+  srcLight: string;
+  srcDark: string;
+};
+
+const ThemeImage = (props: Props) => {
+  const { srcLight, srcDark, ...rest } = props;
+
+  return (
+    <>
+      <Image {...rest} src={srcLight} className="imgLight" />
+      <Image {...rest} src={srcDark} className="imgDark" />
+    </>
+  );
+};
+
+export default function Home() {
+  return (
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <ThemeImage
+          className={styles.logo}
+          srcLight="turborepo-dark.svg"
+          srcDark="turborepo-light.svg"
+          alt="Turborepo logo"
+          width={180}
+          height={38}
+          priority
+        />
+        <ol>
+          <li>
+            Get started by editing <code>apps/web/app/page.tsx</code>
+          </li>
+          <li>Save and see your changes instantly.</li>
+        </ol>
+
+        <div className={styles.ctas}>
+          <a
+            className={styles.primary}
+            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className={styles.logo}
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={20}
+              height={20}
+            />
+            Deploy now
+          </a>
+          <a
+            href="https://turborepo.com/docs?utm_source"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.secondary}
+          >
+            Read our docs
+          </a>
+        </div>
+        <Button appName="web" className={styles.secondary}>
+          Open alert
+        </Button>
+      </main>
+      <footer className={styles.footer}>
+        <a
+          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/window.svg"
+            alt="Window icon"
+            width={16}
+            height={16}
+          />
+          Examples
+        </a>
+        <a
+          href="https://turborepo.com?utm_source=create-turbo"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/globe.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Go to turborepo.com →
+        </a>
+      </footer>
+    </div>
+  );
+}
+
+================
+File: apps/web/public/file-text.svg
+================
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 13.5V6.5V5.41421C14.5 5.149 14.3946 4.89464 14.2071 4.70711L9.79289 0.292893C9.60536 0.105357 9.351 0 9.08579 0H8H3H1.5V1.5V13.5C1.5 14.8807 2.61929 16 4 16H12C13.3807 16 14.5 14.8807 14.5 13.5ZM13 13.5V6.5H9.5H8V5V1.5H3V13.5C3 14.0523 3.44772 14.5 4 14.5H12C12.5523 14.5 13 14.0523 13 13.5ZM9.5 5V2.12132L12.3787 5H9.5ZM5.13 5.00062H4.505V6.25062H5.13H6H6.625V5.00062H6H5.13ZM4.505 8H5.13H11H11.625V9.25H11H5.13H4.505V8ZM5.13 11H4.505V12.25H5.13H11H11.625V11H11H5.13Z" fill="#666666"/>
+</svg>
+
+================
+File: apps/web/public/globe.svg
+================
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_868_525)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10.268 14.0934C11.9051 13.4838 13.2303 12.2333 13.9384 10.6469C13.1192 10.7941 12.2138 10.9111 11.2469 10.9925C11.0336 12.2005 10.695 13.2621 10.268 14.0934ZM8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16ZM8.48347 14.4823C8.32384 14.494 8.16262 14.5 8 14.5C7.83738 14.5 7.67616 14.494 7.51654 14.4823C7.5132 14.4791 7.50984 14.4759 7.50647 14.4726C7.2415 14.2165 6.94578 13.7854 6.67032 13.1558C6.41594 12.5744 6.19979 11.8714 6.04101 11.0778C6.67605 11.1088 7.33104 11.125 8 11.125C8.66896 11.125 9.32395 11.1088 9.95899 11.0778C9.80021 11.8714 9.58406 12.5744 9.32968 13.1558C9.05422 13.7854 8.7585 14.2165 8.49353 14.4726C8.49016 14.4759 8.4868 14.4791 8.48347 14.4823ZM11.4187 9.72246C12.5137 9.62096 13.5116 9.47245 14.3724 9.28806C14.4561 8.87172 14.5 8.44099 14.5 8C14.5 7.55901 14.4561 7.12828 14.3724 6.71194C13.5116 6.52755 12.5137 6.37904 11.4187 6.27753C11.4719 6.83232 11.5 7.40867 11.5 8C11.5 8.59133 11.4719 9.16768 11.4187 9.72246ZM10.1525 6.18401C10.2157 6.75982 10.25 7.36805 10.25 8C10.25 8.63195 10.2157 9.24018 10.1525 9.81598C9.46123 9.85455 8.7409 9.875 8 9.875C7.25909 9.875 6.53877 9.85455 5.84749 9.81598C5.7843 9.24018 5.75 8.63195 5.75 8C5.75 7.36805 5.7843 6.75982 5.84749 6.18401C6.53877 6.14545 7.25909 6.125 8 6.125C8.74091 6.125 9.46123 6.14545 10.1525 6.18401ZM11.2469 5.00748C12.2138 5.08891 13.1191 5.20593 13.9384 5.35306C13.2303 3.7667 11.9051 2.51622 10.268 1.90662C10.695 2.73788 11.0336 3.79953 11.2469 5.00748ZM8.48347 1.51771C8.4868 1.52089 8.49016 1.52411 8.49353 1.52737C8.7585 1.78353 9.05422 2.21456 9.32968 2.84417C9.58406 3.42562 9.80021 4.12856 9.95899 4.92219C9.32395 4.89118 8.66896 4.875 8 4.875C7.33104 4.875 6.67605 4.89118 6.04101 4.92219C6.19978 4.12856 6.41594 3.42562 6.67032 2.84417C6.94578 2.21456 7.2415 1.78353 7.50647 1.52737C7.50984 1.52411 7.51319 1.52089 7.51653 1.51771C7.67615 1.50597 7.83738 1.5 8 1.5C8.16262 1.5 8.32384 1.50597 8.48347 1.51771ZM5.73202 1.90663C4.0949 2.51622 2.76975 3.7667 2.06159 5.35306C2.88085 5.20593 3.78617 5.08891 4.75309 5.00748C4.96639 3.79953 5.30497 2.73788 5.73202 1.90663ZM4.58133 6.27753C3.48633 6.37904 2.48837 6.52755 1.62761 6.71194C1.54392 7.12828 1.5 7.55901 1.5 8C1.5 8.44099 1.54392 8.87172 1.62761 9.28806C2.48837 9.47245 3.48633 9.62096 4.58133 9.72246C4.52807 9.16768 4.5 8.59133 4.5 8C4.5 7.40867 4.52807 6.83232 4.58133 6.27753ZM4.75309 10.9925C3.78617 10.9111 2.88085 10.7941 2.06159 10.6469C2.76975 12.2333 4.0949 13.4838 5.73202 14.0934C5.30497 13.2621 4.96639 12.2005 4.75309 10.9925Z" fill="#666666"/>
+</g>
+<defs>
+<clipPath id="clip0_868_525">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
+================
+File: apps/web/public/next.svg
+================
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+
+================
+File: apps/web/public/turborepo-dark.svg
+================
+<svg width="473" height="76" viewBox="0 0 473 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M130.998 30.6565V22.3773H91.0977V30.6565H106.16V58.1875H115.935V30.6565H130.998Z" fill="black"/>
+<path d="M153.542 58.7362C165.811 58.7362 172.544 52.5018 172.544 42.2275V22.3773H162.768V41.2799C162.768 47.0155 159.776 50.2574 153.542 50.2574C147.307 50.2574 144.315 47.0155 144.315 41.2799V22.3773H134.539V42.2275C134.539 52.5018 141.272 58.7362 153.542 58.7362Z" fill="black"/>
+<path d="M187.508 46.3173H197.234L204.914 58.1875H216.136L207.458 45.2699C212.346 43.5243 215.338 39.634 215.338 34.3473C215.338 26.6665 209.603 22.3773 200.874 22.3773H177.732V58.1875H187.508V46.3173ZM187.508 38.5867V30.5568H200.376C203.817 30.5568 205.712 32.053 205.712 34.5967C205.712 36.9907 203.817 38.5867 200.376 38.5867H187.508Z" fill="black"/>
+<path d="M219.887 58.1875H245.472C253.452 58.1875 258.041 54.397 258.041 48.0629C258.041 43.8235 255.348 40.9308 252.156 39.634C254.35 38.5867 257.043 36.0929 257.043 32.1528C257.043 25.8187 252.555 22.3773 244.625 22.3773H219.887V58.1875ZM229.263 36.3922V30.3074H243.627C246.32 30.3074 247.817 31.3548 247.817 33.3498C247.817 35.3448 246.32 36.3922 243.627 36.3922H229.263ZM229.263 43.7238H244.525C247.168 43.7238 248.615 45.0205 248.615 46.9657C248.615 48.9108 247.168 50.2075 244.525 50.2075H229.263V43.7238Z" fill="black"/>
+<path d="M281.942 21.7788C269.423 21.7788 260.396 29.6092 260.396 40.2824C260.396 50.9557 269.423 58.786 281.942 58.786C294.461 58.786 303.438 50.9557 303.438 40.2824C303.438 29.6092 294.461 21.7788 281.942 21.7788ZM281.942 30.2575C288.525 30.2575 293.463 34.1478 293.463 40.2824C293.463 46.417 288.525 50.3073 281.942 50.3073C275.359 50.3073 270.421 46.417 270.421 40.2824C270.421 34.1478 275.359 30.2575 281.942 30.2575Z" fill="black"/>
+<path d="M317.526 46.3173H327.251L334.932 58.1875H346.154L337.476 45.2699C342.364 43.5243 345.356 39.634 345.356 34.3473C345.356 26.6665 339.62 22.3773 330.892 22.3773H307.75V58.1875H317.526V46.3173ZM317.526 38.5867V30.5568H330.394C333.835 30.5568 335.73 32.053 335.73 34.5967C335.73 36.9907 333.835 38.5867 330.394 38.5867H317.526Z" fill="black"/>
+<path d="M349.904 22.3773V58.1875H384.717V49.9083H359.48V44.0729H381.874V35.9932H359.48V30.6565H384.717V22.3773H349.904Z" fill="black"/>
+<path d="M399.204 46.7662H412.221C420.95 46.7662 426.685 42.5767 426.685 34.5967C426.685 26.5668 420.95 22.3773 412.221 22.3773H389.428V58.1875H399.204V46.7662ZM399.204 38.6365V30.5568H411.673C415.164 30.5568 417.059 32.053 417.059 34.5967C417.059 37.0904 415.164 38.6365 411.673 38.6365H399.204Z" fill="black"/>
+<path d="M450.948 21.7788C438.43 21.7788 429.402 29.6092 429.402 40.2824C429.402 50.9557 438.43 58.786 450.948 58.786C463.467 58.786 472.444 50.9557 472.444 40.2824C472.444 29.6092 463.467 21.7788 450.948 21.7788ZM450.948 30.2575C457.532 30.2575 462.469 34.1478 462.469 40.2824C462.469 46.417 457.532 50.3073 450.948 50.3073C444.365 50.3073 439.427 46.417 439.427 40.2824C439.427 34.1478 444.365 30.2575 450.948 30.2575Z" fill="black"/>
+<path d="M38.5017 18.0956C27.2499 18.0956 18.0957 27.2498 18.0957 38.5016C18.0957 49.7534 27.2499 58.9076 38.5017 58.9076C49.7535 58.9076 58.9077 49.7534 58.9077 38.5016C58.9077 27.2498 49.7535 18.0956 38.5017 18.0956ZM38.5017 49.0618C32.6687 49.0618 27.9415 44.3346 27.9415 38.5016C27.9415 32.6686 32.6687 27.9414 38.5017 27.9414C44.3347 27.9414 49.0619 32.6686 49.0619 38.5016C49.0619 44.3346 44.3347 49.0618 38.5017 49.0618Z" fill="black"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M40.2115 14.744V7.125C56.7719 8.0104 69.9275 21.7208 69.9275 38.5016C69.9275 55.2824 56.7719 68.989 40.2115 69.8782V62.2592C52.5539 61.3776 62.3275 51.0644 62.3275 38.5016C62.3275 25.9388 52.5539 15.6256 40.2115 14.744ZM20.5048 54.0815C17.233 50.3043 15.124 45.4935 14.7478 40.2115H7.125C7.5202 47.6025 10.4766 54.3095 15.1088 59.4737L20.501 54.0815H20.5048ZM36.7916 69.8782V62.2592C31.5058 61.883 26.695 59.7778 22.9178 56.5022L17.5256 61.8944C22.6936 66.5304 29.4006 69.483 36.7878 69.8782H36.7916Z" fill="url(#paint0_linear_2028_278)"/>
+<defs>
+<linearGradient id="paint0_linear_2028_278" x1="41.443" y1="11.5372" x2="10.5567" y2="42.4236" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0096FF"/>
+<stop offset="1" stop-color="#FF1E56"/>
+</linearGradient>
+</defs>
+</svg>
+
+================
+File: apps/web/public/turborepo-light.svg
+================
+<svg width="473" height="76" viewBox="0 0 473 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M130.998 30.6566V22.3773H91.0977V30.6566H106.16V58.1876H115.935V30.6566H130.998Z" fill="white"/>
+<path d="M153.542 58.7362C165.811 58.7362 172.544 52.5018 172.544 42.2276V22.3773H162.768V41.2799C162.768 47.0156 159.776 50.2574 153.542 50.2574C147.307 50.2574 144.315 47.0156 144.315 41.2799V22.3773H134.539V42.2276C134.539 52.5018 141.272 58.7362 153.542 58.7362Z" fill="white"/>
+<path d="M187.508 46.3173H197.234L204.914 58.1876H216.136L207.458 45.2699C212.346 43.5243 215.338 39.6341 215.338 34.3473C215.338 26.6666 209.603 22.3773 200.874 22.3773H177.732V58.1876H187.508V46.3173ZM187.508 38.5867V30.5568H200.376C203.817 30.5568 205.712 32.0531 205.712 34.5967C205.712 36.9907 203.817 38.5867 200.376 38.5867H187.508Z" fill="white"/>
+<path d="M219.887 58.1876H245.472C253.452 58.1876 258.041 54.3971 258.041 48.0629C258.041 43.8236 255.348 40.9308 252.156 39.6341C254.35 38.5867 257.043 36.0929 257.043 32.1528C257.043 25.8187 252.555 22.3773 244.625 22.3773H219.887V58.1876ZM229.263 36.3922V30.3074H243.627C246.32 30.3074 247.817 31.3548 247.817 33.3498C247.817 35.3448 246.32 36.3922 243.627 36.3922H229.263ZM229.263 43.7238H244.525C247.168 43.7238 248.615 45.0206 248.615 46.9657C248.615 48.9108 247.168 50.2076 244.525 50.2076H229.263V43.7238Z" fill="white"/>
+<path d="M281.942 21.7788C269.423 21.7788 260.396 29.6092 260.396 40.2824C260.396 50.9557 269.423 58.7861 281.942 58.7861C294.461 58.7861 303.438 50.9557 303.438 40.2824C303.438 29.6092 294.461 21.7788 281.942 21.7788ZM281.942 30.2576C288.525 30.2576 293.463 34.1478 293.463 40.2824C293.463 46.4171 288.525 50.3073 281.942 50.3073C275.359 50.3073 270.421 46.4171 270.421 40.2824C270.421 34.1478 275.359 30.2576 281.942 30.2576Z" fill="white"/>
+<path d="M317.526 46.3173H327.251L334.932 58.1876H346.154L337.476 45.2699C342.364 43.5243 345.356 39.6341 345.356 34.3473C345.356 26.6666 339.62 22.3773 330.892 22.3773H307.75V58.1876H317.526V46.3173ZM317.526 38.5867V30.5568H330.394C333.835 30.5568 335.73 32.0531 335.73 34.5967C335.73 36.9907 333.835 38.5867 330.394 38.5867H317.526Z" fill="white"/>
+<path d="M349.904 22.3773V58.1876H384.717V49.9083H359.48V44.0729H381.874V35.9932H359.48V30.6566H384.717V22.3773H349.904Z" fill="white"/>
+<path d="M399.204 46.7662H412.221C420.95 46.7662 426.685 42.5767 426.685 34.5967C426.685 26.5668 420.95 22.3773 412.221 22.3773H389.428V58.1876H399.204V46.7662ZM399.204 38.6366V30.5568H411.673C415.164 30.5568 417.059 32.0531 417.059 34.5967C417.059 37.0904 415.164 38.6366 411.673 38.6366H399.204Z" fill="white"/>
+<path d="M450.948 21.7788C438.43 21.7788 429.402 29.6092 429.402 40.2824C429.402 50.9557 438.43 58.7861 450.948 58.7861C463.467 58.7861 472.444 50.9557 472.444 40.2824C472.444 29.6092 463.467 21.7788 450.948 21.7788ZM450.948 30.2576C457.532 30.2576 462.469 34.1478 462.469 40.2824C462.469 46.4171 457.532 50.3073 450.948 50.3073C444.365 50.3073 439.427 46.4171 439.427 40.2824C439.427 34.1478 444.365 30.2576 450.948 30.2576Z" fill="white"/>
+<path d="M38.5017 18.0956C27.2499 18.0956 18.0957 27.2498 18.0957 38.5016C18.0957 49.7534 27.2499 58.9076 38.5017 58.9076C49.7535 58.9076 58.9077 49.7534 58.9077 38.5016C58.9077 27.2498 49.7535 18.0956 38.5017 18.0956ZM38.5017 49.0618C32.6687 49.0618 27.9415 44.3346 27.9415 38.5016C27.9415 32.6686 32.6687 27.9414 38.5017 27.9414C44.3347 27.9414 49.0619 32.6686 49.0619 38.5016C49.0619 44.3346 44.3347 49.0618 38.5017 49.0618Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M40.2115 14.744V7.125C56.7719 8.0104 69.9275 21.7208 69.9275 38.5016C69.9275 55.2824 56.7719 68.989 40.2115 69.8782V62.2592C52.5539 61.3776 62.3275 51.0644 62.3275 38.5016C62.3275 25.9388 52.5539 15.6256 40.2115 14.744ZM20.5048 54.0815C17.233 50.3043 15.124 45.4935 14.7478 40.2115H7.125C7.5202 47.6025 10.4766 54.3095 15.1088 59.4737L20.501 54.0815H20.5048ZM36.7916 69.8782V62.2592C31.5058 61.883 26.695 59.7778 22.9178 56.5022L17.5256 61.8944C22.6936 66.5304 29.4006 69.483 36.7878 69.8782H36.7916Z" fill="url(#paint0_linear_2028_477)"/>
+<defs>
+<linearGradient id="paint0_linear_2028_477" x1="41.443" y1="11.5372" x2="10.5567" y2="42.4236" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0096FF"/>
+<stop offset="1" stop-color="#FF1E56"/>
+</linearGradient>
+</defs>
+</svg>
+
+================
+File: apps/web/public/vercel.svg
+================
+<svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_977_547)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10.5 3L18.5 17H2.5L10.5 3Z" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_977_547">
+<rect width="16" height="16" fill="white" transform="translate(2.5 2)"/>
+</clipPath>
+</defs>
+</svg>
+
+================
+File: apps/web/public/window.svg
+================
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5H14.5V12.5C14.5 13.0523 14.0523 13.5 13.5 13.5H2.5C1.94772 13.5 1.5 13.0523 1.5 12.5V2.5ZM0 1H1.5H14.5H16V2.5V12.5C16 13.8807 14.8807 15 13.5 15H2.5C1.11929 15 0 13.8807 0 12.5V2.5V1ZM3.75 5.5C4.16421 5.5 4.5 5.16421 4.5 4.75C4.5 4.33579 4.16421 4 3.75 4C3.33579 4 3 4.33579 3 4.75C3 5.16421 3.33579 5.5 3.75 5.5ZM7 4.75C7 5.16421 6.66421 5.5 6.25 5.5C5.83579 5.5 5.5 5.16421 5.5 4.75C5.5 4.33579 5.83579 4 6.25 4C6.66421 4 7 4.33579 7 4.75ZM8.75 5.5C9.16421 5.5 9.5 5.16421 9.5 4.75C9.5 4.33579 9.16421 4 8.75 4C8.33579 4 8 4.33579 8 4.75C8 5.16421 8.33579 5.5 8.75 5.5Z" fill="#666666"/>
+</svg>
+
+================
+File: apps/web/.gitignore
+================
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files (can opt-in for commiting if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+================
+File: apps/web/eslint.config.js
+================
+import { nextJsConfig } from "@repo/eslint-config/next-js";
+
+/** @type {import("eslint").Linter.Config[]} */
+export default nextJsConfig;
+
+================
+File: apps/web/next.config.js
+================
+/** @type {import('next').NextConfig} */
+const nextConfig = {};
+
+export default nextConfig;
+
+================
+File: apps/web/package.json
+================
+{
+  "name": "web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint --max-warnings 0",
+    "check-types": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/ui": "workspace:*",
+    "next": "16.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "eslint": "^9.39.1",
+    "typescript": "5.9.2"
+  }
+}
+
+================
+File: apps/web/README.md
+================
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+================
+File: apps/web/tsconfig.json
+================
+{
+  "extends": "@repo/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    "next.config.js",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+
+================
+File: packages/database/prisma/schema.prisma
+================
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+generator client {
+  provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- SYSTEM MODELS (from client-file-service) ---
+model System {
+  sid            String   @id @unique
+  mainProduct    String?
+  dbVersion      String?
+  osType         String?
+  osVersion      String?
+  osPatch        String?
+  kernelRelease  String?
+  dbslVersion    String?
+  dbslPatchLevel String?
+  vmJavaVersion  String?
+  vmRuntimeVersion String?
+  javaKernelVersion String?
+  updatedAt      DateTime @updatedAt
+
+  abapComponents   AbapComponent[]
+  javaComponents   JavaComponent[]
+  vulnerabilities  SapVulnerability[]
+}
+
+model AbapComponent {
+  id               String  @id @default(uuid())
+  component        String
+  release          String
+  // Critical for accuracy:
+  spLevel          String? 
+  supportPackage   String?
+  shortDescription String?
+  
+  systemSid        String
+  system           System  @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+  
+  @@index([systemSid])
+}
+
+model JavaComponent {
+  id        String  @id @default(uuid())
+  name      String
+  vendor    String?
+  version   String
+  location  String?
+  
+  systemSid String
+  system    System  @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+  
+  @@index([systemSid])
+}
+
+// --- NOTE MODELS (from sap-note-service) ---
+model SapNote {
+  id           String   @id @default(uuid())
+  noteNumber   String   @unique
+  title        String?
+  priority     String?
+  cvssScore    Float?
+  cvssVector   String?
+  confidence   Int
+  correction   String?
+  rawText      String
+  createdAt    DateTime @default(now())
+
+  components   SapNoteComponent[]
+  vulnerabilities SapVulnerability[]
+}
+
+model SapNoteComponent {
+  id          String   @id @default(uuid())
+  noteId      String
+  note        SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  component   String
+  fromVersion String?
+  toVersion   String?
+  // Critical for accuracy:
+  fixedInSp   String?  
+
+  @@unique([noteId, component])
+}
+
+// --- VULNERABILITY MODELS (from sap-core-service) ---
+model SapVulnerability {
+  id               String   @id @default(uuid())
+  systemId         String
+  system           System   @relation(fields: [systemId], references: [sid], onDelete: Cascade)
+  
+  componentName    String
+  componentVersion String
+  
+  noteId           String
+  note             SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteNumber       String
+  
+  fromVersion      String?
+  toVersion        String?
+  
+  detectedAt       DateTime @default(now())
+
+  @@unique([systemId, componentName, noteId])
+  @@index([systemId])
+  @@index([noteId])
+}
+
+================
+File: packages/database/src/index.ts
+================
+export * from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+
+export const prisma = new PrismaClient();
+
+================
+File: packages/database/.gitignore
+================
+node_modules
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+================
+File: packages/database/package.json
+================
+{
+  "name": "@repo/database",
+  "version": "0.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.2"
+  },
+  "devDependencies": {
+    "prisma": "^5.10.2",
+    "typescript": "^5.3.3"
+  }
+}
+
+================
+File: packages/database/prisma.config.ts
+================
+// This file was generated by Prisma, and assumes you have installed the following:
+// npm install --save-dev prisma dotenv
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: process.env["DATABASE_URL"],
+  },
+});
+
+================
+File: packages/database/tsconfig.json
+================
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./build",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*",
+        "prisma.config.ts",
+        "prisma/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "tests"
+    ]
+}
+
+================
+File: packages/eslint-config/base.js
+================
+import js from "@eslint/js";
+import eslintConfigPrettier from "eslint-config-prettier";
+import turboPlugin from "eslint-plugin-turbo";
+import tseslint from "typescript-eslint";
+import onlyWarn from "eslint-plugin-only-warn";
+
+/**
+ * A shared ESLint configuration for the repository.
+ *
+ * @type {import("eslint").Linter.Config[]}
+ * */
+export const config = [
+  js.configs.recommended,
+  eslintConfigPrettier,
+  ...tseslint.configs.recommended,
+  {
+    plugins: {
+      turbo: turboPlugin,
+    },
+    rules: {
+      "turbo/no-undeclared-env-vars": "warn",
+    },
+  },
+  {
+    plugins: {
+      onlyWarn,
+    },
+  },
+  {
+    ignores: ["dist/**"],
+  },
+];
+
+================
+File: packages/eslint-config/next.js
+================
+import js from "@eslint/js";
+import { globalIgnores } from "eslint/config";
+import eslintConfigPrettier from "eslint-config-prettier";
+import tseslint from "typescript-eslint";
+import pluginReactHooks from "eslint-plugin-react-hooks";
+import pluginReact from "eslint-plugin-react";
+import globals from "globals";
+import pluginNext from "@next/eslint-plugin-next";
+import { config as baseConfig } from "./base.js";
+
+/**
+ * A custom ESLint configuration for libraries that use Next.js.
+ *
+ * @type {import("eslint").Linter.Config[]}
+ * */
+export const nextJsConfig = [
+  ...baseConfig,
+  js.configs.recommended,
+  eslintConfigPrettier,
+  ...tseslint.configs.recommended,
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+  {
+    ...pluginReact.configs.flat.recommended,
+    languageOptions: {
+      ...pluginReact.configs.flat.recommended.languageOptions,
+      globals: {
+        ...globals.serviceworker,
+      },
+    },
+  },
+  {
+    plugins: {
+      "@next/next": pluginNext,
+    },
+    rules: {
+      ...pluginNext.configs.recommended.rules,
+      ...pluginNext.configs["core-web-vitals"].rules,
+    },
+  },
+  {
+    plugins: {
+      "react-hooks": pluginReactHooks,
+    },
+    settings: { react: { version: "detect" } },
+    rules: {
+      ...pluginReactHooks.configs.recommended.rules,
+      // React scope no longer necessary with new JSX transform.
+      "react/react-in-jsx-scope": "off",
+    },
+  },
+];
+
+================
+File: packages/eslint-config/package.json
+================
+{
+  "name": "@repo/eslint-config",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./base": "./base.js",
+    "./next-js": "./next.js",
+    "./react-internal": "./react-internal.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@next/eslint-plugin-next": "^15.5.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-turbo": "^2.7.1",
+    "globals": "^16.5.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.50.0"
+  }
+}
+
+================
+File: packages/eslint-config/react-internal.js
+================
+import js from "@eslint/js";
+import eslintConfigPrettier from "eslint-config-prettier";
+import tseslint from "typescript-eslint";
+import pluginReactHooks from "eslint-plugin-react-hooks";
+import pluginReact from "eslint-plugin-react";
+import globals from "globals";
+import { config as baseConfig } from "./base.js";
+
+/**
+ * A custom ESLint configuration for libraries that use React.
+ *
+ * @type {import("eslint").Linter.Config[]} */
+export const config = [
+  ...baseConfig,
+  js.configs.recommended,
+  eslintConfigPrettier,
+  ...tseslint.configs.recommended,
+  pluginReact.configs.flat.recommended,
+  {
+    languageOptions: {
+      ...pluginReact.configs.flat.recommended.languageOptions,
+      globals: {
+        ...globals.serviceworker,
+        ...globals.browser,
+      },
+    },
+  },
+  {
+    plugins: {
+      "react-hooks": pluginReactHooks,
+    },
+    settings: { react: { version: "detect" } },
+    rules: {
+      ...pluginReactHooks.configs.recommended.rules,
+      // React scope no longer necessary with new JSX transform.
+      "react/react-in-jsx-scope": "off",
+    },
+  },
+];
+
+================
+File: packages/eslint-config/README.md
+================
+# `@turbo/eslint-config`
+
+Collection of internal eslint configurations.
+
+================
+File: packages/typescript-config/base.json
+================
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "incremental": false,
+    "isolatedModules": true,
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleDetection": "force",
+    "moduleResolution": "NodeNext",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022"
+  }
+}
+
+================
+File: packages/typescript-config/nextjs.json
+================
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "plugins": [{ "name": "next" }],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowJs": true,
+    "jsx": "preserve",
+    "noEmit": true
+  }
+}
+
+================
+File: packages/typescript-config/package.json
+================
+{
+  "name": "@repo/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}
+
+================
+File: packages/typescript-config/react-library.json
+================
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  }
+}
+
+================
+File: packages/ui/src/button.tsx
+================
+"use client";
+
+import { ReactNode } from "react";
+
+interface ButtonProps {
+  children: ReactNode;
+  className?: string;
+  appName: string;
+}
+
+export const Button = ({ children, className, appName }: ButtonProps) => {
+  return (
+    <button
+      className={className}
+      onClick={() => alert(`Hello from your ${appName} app!`)}
+    >
+      {children}
+    </button>
+  );
+};
+
+================
+File: packages/ui/src/card.tsx
+================
+import { type JSX } from "react";
+
+export function Card({
+  className,
+  title,
+  children,
+  href,
+}: {
+  className?: string;
+  title: string;
+  children: React.ReactNode;
+  href: string;
+}): JSX.Element {
+  return (
+    <a
+      className={className}
+      href={`${href}?utm_source=create-turbo&utm_medium=basic&utm_campaign=create-turbo"`}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      <h2>
+        {title} <span>-&gt;</span>
+      </h2>
+      <p>{children}</p>
+    </a>
+  );
+}
+
+================
+File: packages/ui/src/code.tsx
+================
+import { type JSX } from "react";
+
+export function Code({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}): JSX.Element {
+  return <code className={className}>{children}</code>;
+}
+
+================
+File: packages/ui/eslint.config.mjs
+================
+import { config } from "@repo/eslint-config/react-internal";
+
+/** @type {import("eslint").Linter.Config} */
+export default config;
+
+================
+File: packages/ui/package.json
+================
+{
+  "name": "@repo/ui",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./*": "./src/*.tsx"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "generate:component": "turbo gen react-component",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "eslint": "^9.39.1",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}
+
+================
+File: packages/ui/tsconfig.json
+================
+{
+  "extends": "@repo/typescript-config/react-library.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
+
+================
+File: .npmrc
+================
+
+
+================
+File: pnpm-workspace.yaml
+================
+packages:
+  - "apps/*"
+  - "packages/*"
+
+================
+File: README.md
+================
+# Turborepo starter
+
+This Turborepo starter is maintained by the Turborepo core team.
+
+## Using this example
+
+Run the following command:
+
+```sh
+npx create-turbo@latest
+```
+
+## What's inside?
+
+This Turborepo includes the following packages/apps:
+
+### Apps and Packages
+
+- `docs`: a [Next.js](https://nextjs.org/) app
+- `web`: another [Next.js](https://nextjs.org/) app
+- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+
+### Utilities
+
+This Turborepo has some additional tools already setup for you:
+
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
+
+### Build
+
+To build all apps and packages, run the following command:
+
+```
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo build
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo build
+yarn dlx turbo build
+pnpm exec turbo build
+```
+
+You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+
+```
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo build --filter=docs
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo build --filter=docs
+yarn exec turbo build --filter=docs
+pnpm exec turbo build --filter=docs
+```
+
+### Develop
+
+To develop all apps and packages, run the following command:
+
+```
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo dev
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo dev
+yarn exec turbo dev
+pnpm exec turbo dev
+```
+
+You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+
+```
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo dev --filter=web
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo dev --filter=web
+yarn exec turbo dev --filter=web
+pnpm exec turbo dev --filter=web
+```
+
+### Remote Caching
+
+> [!TIP]
+> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+
+Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+
+By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+
+```
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo login
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo login
+yarn exec turbo login
+pnpm exec turbo login
+```
+
+This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+
+Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+
+```
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+turbo link
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+npx turbo link
+yarn exec turbo link
+pnpm exec turbo link
+```
+
+## Useful Links
+
+Learn more about the power of Turborepo:
+
+- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
+- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
+- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
+- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
+- [Configuration Options](https://turborepo.com/docs/reference/configuration)
+- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+
+================
+File: turbo.json
+================
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+
+================
+File: apps/clien-file-service/src/config/env.ts
+================
+import { z } from "zod"
+import dotenv from "dotenv"
+
+dotenv.config()
+
+const envSchema = z.object({
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+    PORT: z.string().default("8082"),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+    DATABASE_URL: z.url(),
+    REDIS_URL: z.url(),
+    FILE_STORAGE_PATH: z.string().default("/data/files"),
+    JWT_SECRET: z.string(),
+})
+const _env = envSchema.parse(process.env);
+
+export const env = {
+    NODE_ENV: _env.NODE_ENV,
+    PORT: parseInt(_env.PORT, 10),
+    LOG_LEVEL: _env.LOG_LEVEL,
+    DATABASE_URL: _env.DATABASE_URL,
+    REDIS_URL: _env.REDIS_URL,
+    FILE_STORAGE_PATH: _env.FILE_STORAGE_PATH,
+    JWT_SECRET: _env.JWT_SECRET,
+}
+
+================
+File: apps/clien-file-service/src/workers/file.worker.ts
+================
+import { Worker, Job } from 'bullmq';
+import IORedis from 'ioredis';
+import * as fs from 'fs';
+import clientFileService from '../services/file.service';
+import { FileJobPayload } from '../queues/file.queue';
+
+const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+});
+
+export const fileWorker = new Worker<FileJobPayload>(
+    'file-import-queue',
+    async (job: Job) => {
+        console.log(`[Job ${job.id}] Processing file: ${job.data.fileName}`);
+
+        try {
+            // Run the parsing logic
+            const result = await clientFileService.processExcelFile(job.data.filePath);
+
+            // Log specific errors if any occurred during "self-healing"
+            if (result.errors.length > 0) {
+                await job.log(`Finished with ${result.errors.length} row-level errors.`);
+                // Optionally store these errors in a DB table for the user to see
+            }
+
+            return result;
+
+        } catch (error) {
+            console.error(`[Job ${job.id}] Failed:`, error);
+            throw error; // Triggers BullMQ retry mechanism
+        } finally {
+            // CLEANUP: Always remove the file from temp storage to save disk space
+            if (fs.existsSync(job.data.filePath)) {
+                fs.unlinkSync(job.data.filePath);
+                console.log(`[Job ${job.id}] Temp file deleted.`);
+            }
+        }
+    },
+    {
+        connection,
+        concurrency: 5, // Process 5 files at once
+        limiter: {
+            max: 10,
+            duration: 1000,
+        },
+    }
+);
+
+// Event Listeners for visibility
+fileWorker.on('completed', (job) => {
+    console.log(`[Job ${job.id}] Completed successfully.`);
+});
+fileWorker.on('failed', async (job, err) => {
+    console.error(`[Job ${job?.id}] Failed permanently: ${err.message}`);
+
+    // PRODUCTION READY: Alert the team or save to a 'FailedJobs' table
+    // await prisma.failedJob.create({ 
+    //   data: { jobId: job?.id, reason: err.message, payload: job?.data } 
+    // });
+});
+
+================
+File: apps/clien-file-service/package.json
+================
+{
+  "name": "clien-file-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "bullmq": "^5.66.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.8.2",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0",
+    "ts-node": "^10.9.2",
+    "xlsx": "^0.18.5",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.15.3",
+    "@types/pg": "^8.16.0",
+    "dotenv": "^16.6.1",
+    "nodemon": "^3.1.11",
+    "prisma": "^7.2.0"
+  }
+}
+
+================
+File: apps/clien-file-service/tsconfig.json
+================
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./build",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*",
+        "prisma.config.ts",
+        "prisma/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "tests"
+    ]
+}
+
+================
+File: apps/sap-core-service/src/config/env.ts
+================
+import { z } from "zod"
+import dotenv from "dotenv"
+
+dotenv.config()
+
+const envSchema = z.object({
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+    PORT: z.string().default("8084"),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+    DATABASE_URL: z.url(),
+    REDIS_URL: z.url(),
+    FILE_STORAGE_PATH: z.string().default("/data/files"),
+    JWT_SECRET: z.string(),
+})
+const _env = envSchema.parse(process.env);
+
+export const env = {
+    NODE_ENV: _env.NODE_ENV,
+    PORT: parseInt(_env.PORT, 10),
+    LOG_LEVEL: _env.LOG_LEVEL,
+    DATABASE_URL: _env.DATABASE_URL,
+    REDIS_URL: _env.REDIS_URL,
+    FILE_STORAGE_PATH: _env.FILE_STORAGE_PATH,
+    JWT_SECRET: _env.JWT_SECRET,
+}
+
+================
+File: apps/sap-core-service/src/services/matcher.service.ts
+================
+import prisma from "../config/db";
+
+export async function runVulnerabilityScan() {
+    // We use a raw SQL query to join tables directly in the database.
+    // This runs in milliseconds instead of minutes.
+    const matches = await prisma.$queryRaw`
+        INSERT INTO "SapVulnerability" (
+            "id",
+            "systemId",
+            "componentName",
+            "componentVersion",
+            "noteId",
+            "noteNumber",
+            "fromVersion",
+            "toVersion",
+            "detectedAt"
+        )
+        SELECT
+            gen_random_uuid(),      -- Generate new ID
+            s."sid",                -- System ID
+            ac."component",         -- Component Name
+            ac."release",           -- Installed Version
+            sn."id",                -- Note ID
+            sn."noteNumber",        -- Note Number
+            snc."fromVersion",      -- Vulnerable From
+            snc."toVersion",        -- Vulnerable To
+            NOW()                   -- Current Time
+        FROM "AbapComponent" ac
+        -- Join System to ensure it exists
+        JOIN "System" s ON ac."systemSid" = s."sid"
+        -- Join Note Components where names match
+        JOIN "SapNoteComponent" snc ON ac."component" = snc."component"
+        -- Join Note Details
+        JOIN "SapNote" sn ON snc."noteId" = sn."id"
+        -- THE MATCHING LOGIC: Check if version is within range
+        WHERE
+            ac."release" >= snc."fromVersion"
+            AND ac."release" <= snc."toVersion"
+        -- Avoid duplicates
+        ON CONFLICT ("systemId", "componentName", "noteId") DO NOTHING;
+    `;
+
+    // Return a simple count (Prisma raw query result usually includes row count)
+    return { status: "scanned", message: "Vulnerability scan completed via DB" };
+}
+
+================
+File: apps/sap-core-service/src/app.ts
+================
+import express from "express"
+import cors from 'cors'
+import helmet from "helmet"
+import PinoHttp from "pino-http"
+import rateLimit from "./middleware/rateLimit"
+// import { correlationId } from "./middleware/correlationId"
+// import { internalAuth } from "./middleware/internalAuth";
+import { errorConverter, errorHandler } from "./middleware/errorHandler";
+import healthRoutes from "./routes/health.routes"
+import routes from "./routes/index"
+// import fileRoutes from "./routes/file.routes"
+const app = express()
+
+app.use(helmet())
+app.use(cors({ origin: "*", credentials: true }))
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true }))
+// app.use(correlationId);
+app.use(PinoHttp())
+app.use(rateLimit)
+
+// app.use(internalAuth);[]
+
+app.use("/health", healthRoutes)
+// app.use("/files", fileRoutes)
+
+app.use("/api", routes);
+
+app.use(errorConverter);
+app.use(errorHandler);
+export default app
+
+================
+File: apps/sap-core-service/src/server.ts
+================
+import dotenv from "dotenv"
+dotenv.config()
+import fs from "fs"
+import app from "./app"
+import { logger } from "./utils/logger"
+
+
+const uploadDir = "uploads/notes";
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+
+const PORT = process.env.PORT || 8084
+
+const server = app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT} as ${process.env.NODE_ENV}`);
+});
+
+const gracefulShutdown = () => {
+    logger.info('Received kill signal, shutting down gracefully');
+    server.close(() => {
+        logger.info('Closed out remaining connections');
+        process.exit(0);
+    });
+
+    // Force close if it takes too long (e.g., 10 seconds)
+    setTimeout(() => {
+        logger.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+};
+
+// Listen for termination signals
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+================
+File: apps/sap-note-service/src/config/env.ts
+================
+import { z } from "zod"
+import dotenv from "dotenv"
+
+dotenv.config()
+
+const envSchema = z.object({
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+    PORT: z.string().default("8083"),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+    DATABASE_URL: z.url(),
+    REDIS_URL: z.url(),
+    FILE_STORAGE_PATH: z.string().default("/data/files"),
+    JWT_SECRET: z.string(),
+})
+const _env = envSchema.parse(process.env);
+
+export const env = {
+    NODE_ENV: _env.NODE_ENV,
+    PORT: parseInt(_env.PORT, 10),
+    LOG_LEVEL: _env.LOG_LEVEL,
+    DATABASE_URL: _env.DATABASE_URL,
+    REDIS_URL: _env.REDIS_URL,
+    FILE_STORAGE_PATH: _env.FILE_STORAGE_PATH,
+    JWT_SECRET: _env.JWT_SECRET,
+}
+
+================
+File: apps/sap-note-service/src/routes/file.routes.ts
+================
+import { Router } from "express";
+import multer from "multer";
+import { uploadSapNote } from "../controllers/upload.controller";
+
+const router = Router();
+const upload = multer({ dest: "uploads/notes/" });
+
+router.post("/upload", upload.single("file"), uploadSapNote);
+
+export default router;
+
+================
+File: apps/sap-note-service/src/app.ts
+================
+import express from "express"
+import cors from 'cors'
+import helmet from "helmet"
+import PinoHttp from "pino-http"
+import rateLimit from "./middleware/rateLimit"
+// import { correlationId } from "./middleware/correlationId"
+// import { internalAuth } from "./middleware/internalAuth";
+import { errorConverter, errorHandler } from "./middleware/errorHandler";
+import healthRoutes from "./routes/health.routes"
+import fileRoutes from "./routes/file.routes";
+
+const app = express()
+
+app.use(helmet())
+app.use(cors({ origin: "*", credentials: true }))
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true }))
+// app.use(correlationId);
+app.use(PinoHttp())
+app.use(rateLimit)
+
+// app.use(internalAuth);[]
+
+app.use("/health", healthRoutes)
+app.use("/notes", fileRoutes);
+
+
+app.use(errorConverter);
+app.use(errorHandler);
+export default app
+
+================
+File: apps/user-service/src/config/config.ts
+================
+import path from "path";
+import { config as loadEnv } from "dotenv";
+
+// Always load env from the user-service package root, not the repo root.
+// This matters when running via Turborepo (cwd is often the monorepo root).
+loadEnv({ path: path.resolve(__dirname, "../../.env") });
+
+const { MONGO_URI, PORT, JWT_SECRET, NODE_ENV, MESSAGE_BROKER_URL } = process.env;
+
+const port = Number(PORT ?? 4000);
+
+export default {
+    MONGO_URI,
+    PORT: Number.isFinite(port) ? port : 4000,
+    JWT_SECRET,
+    env: NODE_ENV,
+    msgBrokerURL: MESSAGE_BROKER_URL,
+};
+
+================
+File: apps/user-service/src/controllers/AuthController.ts
+================
+import { Request, Response } from "express";
+import type { CookieOptions } from "express";
+import jwt from "jsonwebtoken";
+import { User } from "../database";
+import { encryptPassword, isPasswordMatch } from "../utils";
+import config from "../config/config";
+
+const cookieOptions: CookieOptions = {
+    httpOnly: true,
+    secure: config.env === "production",
+    sameSite: "strict",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+};
+
+const signToken = (payload: any) =>
+    jwt.sign(payload, config.JWT_SECRET!, { expiresIn: "1d" });
+
+export default {
+    async register(req: Request, res: Response) {
+        const { name, email, password } = req.body;
+
+        const exists = await User.findOne({ email });
+        if (exists) return res.status(400).json({ message: "User already exists" });
+
+        const hashed = await encryptPassword(password);
+
+        const user = await User.create({
+            name,
+            email,
+            password: hashed,
+        });
+
+        return res.json({
+            message: "User registered",
+            data: { id: user._id, name: user.name, email: user.email },
+        });
+    },
+
+    async login(req: Request, res: Response) {
+        const { email, password } = req.body;
+
+        const user = await User.findOne({ email }).select("+password");
+        if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+        const match = await isPasswordMatch(password, user.password);
+        if (!match) return res.status(400).json({ message: "Invalid credentials" });
+
+        const token = signToken({ id: user._id, email: user.email });
+
+        res.cookie("jwt", token, cookieOptions);
+
+        return res.json({
+            message: "Login successful",
+            token,
+        });
+    },
+};
+
+================
+File: apps/user-service/src/middleware/validate.ts
+================
+import { z } from "zod";
+import type { NextFunction, Request, Response } from "express";
+
+interface ValidationErrorResponseBody {
+    message: string;
+    errors: z.ZodError["issues"];
+}
+
+export default (schema: z.ZodTypeAny) => (
+    req: Request,
+    res: Response<ValidationErrorResponseBody>,
+    next: NextFunction
+): void | Response<ValidationErrorResponseBody> => {
+    try {
+        schema.parse({ body: req.body });
+        next();
+    } catch (err: unknown) {
+        if (err instanceof z.ZodError) {
+            return res.status(400).json({
+                message: "Validation error",
+                errors: err.issues,
+            });
+        }
+        // Pass non-Zod errors to the next error handler
+        next(err);
+    }
+};
+
+================
+File: apps/user-service/src/routes/authRoutes.ts
+================
+import { Router } from "express";
+import AuthController from "../controllers/AuthController";
+import { validate } from "../middleware";
+import { registerSchema, loginSchema } from "../validation/auth.schema";
+
+const router = Router();
+
+router.post("/auth/register", validate(registerSchema), AuthController.register);
+router.post("/auth/login", validate(loginSchema), AuthController.login);
+
+export default router;
+
+================
+File: apps/user-service/src/services/rabbitmq.service.ts
+================
+import { Channel, ChannelModel, connect } from "amqplib";
+import config from "../config/config";
+import { User } from "../database";
+import { ApiError } from "../utils";
+
+class RabbitMQService {
+    private requestQueue = "USER_DETAILS_REQUEST";
+    private responseQueue = "USER_DETAILS_RESPONSE";
+    private connection?: ChannelModel;
+    private channel?: Channel;
+    private initializing?: Promise<void>;
+    private consumerStarted = false;
+
+    constructor() {
+        // Intentionally do not auto-connect here.
+        // Auto-connecting from a constructor creates an unhandled Promise rejection
+        // when RabbitMQ isn't ready yet (common in Docker Compose startup).
+    }
+
+    async init(): Promise<void> {
+        if (!config.msgBrokerURL) {
+            throw new Error(
+                "Missing MESSAGE_BROKER_URL. Set it in apps/user-service/.env (or process.env)."
+            );
+        }
+        const msgBrokerURL = config.msgBrokerURL;
+
+        if (this.channel) return;
+        if (this.initializing) return this.initializing;
+
+        this.initializing = (async () => {
+            const maxAttempts = 30;
+            const delayMs = 1000;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                try {
+                    this.consumerStarted = false;
+
+                    this.connection = await connect(msgBrokerURL);
+                    this.connection.on("close", () => {
+                        this.connection = undefined;
+                        this.channel = undefined;
+                        this.initializing = undefined;
+                        this.consumerStarted = false;
+                        void this.init().catch(() => undefined);
+                    });
+                    this.connection.on("error", () => {
+                        // Connection errors are handled by 'close' in most cases.
+                        // Avoid throwing here to prevent crashing the process.
+                    });
+
+                    this.channel = await this.connection.createChannel();
+                    this.channel.on("close", () => {
+                        this.channel = undefined;
+                        this.initializing = undefined;
+                        this.consumerStarted = false;
+                        void this.init().catch(() => undefined);
+                    });
+                    this.channel.on("error", () => {
+                        // Same rationale as connection error handler.
+                    });
+
+                    await this.channel.assertQueue(this.requestQueue);
+                    await this.channel.assertQueue(this.responseQueue);
+
+                    this.listenForRequests();
+                    return;
+                } catch (err) {
+                    if (attempt === maxAttempts) throw err;
+                    await new Promise((resolve) => setTimeout(resolve, delayMs));
+                }
+            }
+        })();
+
+        try {
+            await this.initializing;
+        } finally {
+            this.initializing = undefined;
+        }
+    }
+
+    private async listenForRequests() {
+        if (!this.channel) return;
+        if (this.consumerStarted) return;
+        this.consumerStarted = true;
+
+        this.channel.consume(this.requestQueue, async (msg) => {
+            if (msg && msg.content) {
+                const { userId } = JSON.parse(msg.content.toString());
+                const userDetails = await getUserDetails(userId);
+
+                // Send the user details response
+                this.channel?.sendToQueue(
+                    this.responseQueue,
+                    Buffer.from(JSON.stringify(userDetails)),
+                    { correlationId: msg.properties.correlationId }
+                );
+
+                // Acknowledge the processed message
+                this.channel?.ack(msg);
+            }
+        });
+    }
+}
+
+const getUserDetails = async (userId: string) => {
+    const userDetails = await User.findById(userId).select("-password");
+    if (!userDetails) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return userDetails;
+};
+export const rabbitMQService = new RabbitMQService();
+
+================
+File: apps/user-service/package.json
+================
+{
+  "name": "user-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development nodemon src/server.ts",
+    "build": "rm -rf build/ && tsc -p .",
+    "start": "NODE_ENV=production nodemon build/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/validator": "^13.11.8",
+    "amqplib": "^0.10.3",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.4",
+    "nodemon": "^3.0.2",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "validator": "^13.11.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/pino": "^7.0.5"
+  }
+}
+
+================
+File: .gitignore
+================
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Testing
+coverage
+
+# Turbo
+.turbo
+
+# Vercel
+.vercel
+
+# Build Outputs
+.next/
+out/
+build
+dist
+
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.DS_Store
+*.pem
+
+/generated/prisma
+
+================
+File: docker-compose.yml
+================
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-microservices}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:6-alpine
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+    container_name: user_service
+    env_file:
+      - ./apps/user-service/.env
+    ports:
+      - "8081:8081"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:4000/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  file-service:
+    build:
+      context: .
+      dockerfile: apps/clien-file-service/Dockerfile
+    container_name: file_service
+    env_file:
+      - ./apps/clien-file-service/.env
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - file_uploads:/app/uploads/temp
+
+  sap-note-service:
+    build:
+      context: .
+      dockerfile: apps/sap-note-service/Dockerfile
+    container_name: sap_note_service
+    env_file:
+      - ./apps/sap-note-service/.env
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - note_uploads:/app/uploads/notes
+
+  sap-core-service:
+    build:
+      context: .
+      dockerfile: apps/sap-core-service/Dockerfile
+    container_name: sap_core_service
+    env_file:
+      - ./apps/sap-core-service/.env
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    container_name: api_gateway
+    env_file:
+      - ./apps/gateway/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - file-service
+      - sap-note-service
+      - sap-core-service
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+  rabbitmq_data:
+  file_uploads:
+  note_uploads:
+
+================
+File: package.json
+================
+{
+  "name": "firstmicroservice",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4",
+    "turbo": "^2.7.2",
+    "typescript": "5.9.2"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
+  }
+}
+
+================
+File: apps/clien-file-service/src/app.ts
+================
+import express from "express"
+import cors from 'cors'
+import helmet from "helmet"
+import PinoHttp from "pino-http"
+import rateLimit from "./middleware/rateLimit"
+// import { correlationId } from "./middleware/correlationId"
+// import { internalAuth } from "./middleware/internalAuth";
+import { errorConverter, errorHandler } from "./middleware/errorHandler";
+import healthRoutes from "./routes/health.routes"
+import fileRoutes from "./routes/file.routes"
+const app = express()
+
+app.use(helmet())
+app.use(cors({ origin: "*", credentials: true }))
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true }))
+// app.use(correlationId);
+app.use(PinoHttp())
+app.use(rateLimit)
+
+// app.use(internalAuth);[]
+
+app.use("/health", healthRoutes)
+app.use("/files", fileRoutes)
+
+
+app.use(errorConverter);
+app.use(errorHandler);
+export default app
+
+================
+File: apps/clien-file-service/src/server.ts
+================
+import dotenv from "dotenv"
+dotenv.config()
+
+import app from "./app"
+import { logger } from "./utils/logger"
+import "./workers/file.worker"
+
+const PORT = process.env.PORT
+
+const server = app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT} as ${process.env.NODE_ENV}`);
+});
+
+const gracefulShutdown = () => {
+    logger.info('Received kill signal, shutting down gracefully');
+    server.close(() => {
+        logger.info('Closed out remaining connections');
+        process.exit(0);
+    });
+
+    // Force close if it takes too long (e.g., 10 seconds)
+    setTimeout(() => {
+        logger.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+};
+
+// Listen for termination signals
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+================
+File: apps/gateway/package.json
+================
+{
+  "name": "gateway",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --watch src --ext ts,json --exec ts-node ./src/index.ts",
+    "build": "rm -rf build/ && tsc -p .",
+    "start": "node build/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/express-http-proxy": "^1.6.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-http-proxy": "^2.0.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.0.3",
+    "pino-http": "^11.0.0",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/jsonwebtoken": "^9.0.5",
+    "typescript": "^5.9.2"
+  }
+}
+
+================
+File: apps/sap-core-service/package.json
+================
+{
+  "name": "sap-core-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@types/pg": "^8.16.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0",
+    "ts-node": "^10.9.2",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.15.3",
+    "dotenv": "^17.2.3",
+    "nodemon": "^3.1.11",
+    "prisma": "^7.2.0"
+  }
+}
+
+================
+File: apps/sap-note-service/src/utils/noteExtractor.ts
+================
+import { extractSection } from "./sectionExtractor";
+
+export type ExtractedNote = {
+    noteNumber?: string;
+    title?: string;
+
+    components: {
+        name: string;
+        fromVersion?: string;
+        toVersion?: string;
+    }[];
+
+    supportPackages: {
+        component: string;
+        version: string;
+        supportPackage: string;
+    }[];
+
+    cves: string[];
+    cvssScore?: number;
+    cvssVector?: string;
+    priority?: string;
+    correction?: string;
+
+    confidence: number;
+};
+
+export function extractSapNoteFields(text: string): ExtractedNote {
+    let confidence = 0;
+
+    // ─────────────────────────────────────────────
+    // NOTE NUMBER
+    // Example: "3426825 - [CVE-2025-23191]"
+    // ─────────────────────────────────────────────
+    const noteNumber =
+        text.match(/^(\d{6,7})\s*-/m)?.[1] ||
+        text.match(/SAP\s+Note\s+(\d{6,7})/i)?.[1];
+
+    if (noteNumber) confidence += 20;
+
+    // ─────────────────────────────────────────────
+    // TITLE
+    // Example:
+    // "3426825 - Cache Poisoning through header manipulation"
+    // ─────────────────────────────────────────────
+    const title =
+        text.match(/^\d{6,7}\s*-\s*(.+)/m)?.[1]?.trim();
+
+    if (title) confidence += 10;
+
+    // ─────────────────────────────────────────────
+    // CVEs
+    // ─────────────────────────────────────────────
+    const cves = new Set<string>();
+    for (const cve of text.matchAll(/CVE-\d{4}-\d{4,7}/g)) {
+        cves.add(cve[0]);
+    }
+    if (cves.size > 0) confidence += 10;
+
+    // ─────────────────────────────────────────────
+    // CVSS
+    // ─────────────────────────────────────────────
+    const cvssScoreStr =
+        text.match(/CVSS\s*Score\s*[:=]\s*([\d.]+)/i)?.[1];
+    const cvssVector =
+        text.match(/CVSS\s*Vector\s*[:=]\s*(CVSS:[^\s]+)/i)?.[1];
+
+    const cvssScore = cvssScoreStr
+        ? parseFloat(cvssScoreStr)
+        : undefined;
+
+    if (cvssScore) confidence += 10;
+
+    // ─────────────────────────────────────────────
+    // PRIORITY (sometimes absent)
+    // ─────────────────────────────────────────────
+    const priority =
+        text.match(/Priority\s*[:=]\s*(Hot\s*News|High|Medium|Low)/i)?.[1];
+
+    if (priority) confidence += 5;
+
+    // ─────────────────────────────────────────────
+    // SOFTWARE COMPONENTS (CORE SECTION)
+    // SAP FORMAT:
+    // SAP_GWFND 740 740
+    // ─────────────────────────────────────────────
+    const components: ExtractedNote["components"] = [];
+
+    const softwareComponentsSection = extractSection(
+        text,
+        /Software\s+Components?/i,
+        /Correction\s+Instructions?|Support\s+Package|Prerequisites/i
+    );
+
+    if (softwareComponentsSection) {
+        confidence += 25;
+
+        const lineRegex =
+            /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/gm;
+
+        let match;
+        while ((match = lineRegex.exec(softwareComponentsSection))) {
+            components.push({
+                name: match[1],
+                fromVersion: match[2],
+                toVersion: match[3],
+            });
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // SUPPORT PACKAGES (REMEDIATION GOLD)
+    // Example:
+    // SAP_GWFND 740 SAPK-74033INSAPGWFND
+    // ─────────────────────────────────────────────
+    const supportPackages: ExtractedNote["supportPackages"] = [];
+
+    const supportPackageSection = extractSection(
+        text,
+        /Support\s+Package/i,
+        /References|This\s+document\s+refers/i
+    );
+
+    if (supportPackageSection) {
+        confidence += 10;
+
+        const spRegex =
+            /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(SAPK-[A-Z0-9]+)/gm;
+
+        let match;
+        while ((match = spRegex.exec(supportPackageSection))) {
+            supportPackages.push({
+                component: match[1],
+                version: match[2],
+                supportPackage: match[3],
+            });
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // CORRECTION INSTRUCTIONS (RAW TEXT)
+    // ─────────────────────────────────────────────
+    const correction =
+        extractSection(
+            text,
+            /Correction\s+Instructions?/i,
+            /Support\s+Package|References/i
+        ) ?? undefined;
+
+    if (correction) confidence += 5;
+
+    // ─────────────────────────────────────────────
+    // FINAL RESULT
+    // ─────────────────────────────────────────────
+    return {
+        noteNumber,
+        title,
+        components,
+        supportPackages,
+        cves: Array.from(cves),
+        cvssScore,
+        cvssVector,
+        priority,
+        correction,
+        confidence,
+    };
+}
+
+================
+File: apps/sap-note-service/package.json
+================
+{
+  "name": "sap-note-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "bullmq": "^5.66.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.8.2",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0",
+    "ts-node": "^10.9.2",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.15.3",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/pg": "^8.16.0",
+    "dotenv": "^16.6.1",
+    "nodemon": "^3.1.11",
+    "prisma": "^7.2.0"
+  }
+}
+
+================
+File: apps/user-service/src/middleware/index.ts
+================
+import { ErrorRequestHandler } from "express";
+import { ApiError } from "../utils"
+
+export { default as validate } from "./validate";
+
+export const errorConverter: ErrorRequestHandler = (err, req, res, next) => {
+    let error = err;
+    if (!(error instanceof ApiError)) {
+        const statusCode = error.statusCode || (error instanceof Error ? 400 : 500)
+        const message = error.message || (statusCode === 400 ? "Bad Request" : "Internal Server Error")
+        error = new ApiError(statusCode, message, false, err.stack.toString())
+
+    }
+    next(error);
+}
+
+export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+    let { statusCode, message } = err;
+    if (process.env.NODE_ENV === "production" && !err.isOperational) {
+        statusCode = 500;
+        message = "Internal Server Error";
+    }
+    res.locals.errorMessage = err.message
+
+    const response = {
+        code: statusCode,
+        message,
+        ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+    }
+    if (process.env.NODE_ENV === "development") {
+        console.error(err);
+    }
+    res.status(statusCode).json(response);
+}
+
+================
+File: apps/sap-core-service/prisma/schema.prisma
+================
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------
+// Imported/shared models (used by vulnerability matcher)
+// These correspond to tables populated by other services.
+// ---------------------------------------------------------
+
+model System {
+  sid String @id @unique
+
+  mainProduct String?
+  dbVersion   String?
+  osType      String?
+
+  osVersion      String?
+  osPatch        String?
+  kernelRelease  String?
+  dbslVersion    String?
+  dbslPatchLevel String?
+
+  vmJavaVersion     String?
+  vmRuntimeVersion  String?
+  javaKernelVersion String?
+
+  abapComponents AbapComponent[]
+  javaComponents JavaComponent[]
+
+  vulnerabilities SapVulnerability[]
+
+  updatedAt DateTime @updatedAt
+}
+
+model AbapComponent {
+  id String @id @default(uuid())
+
+  component        String
+  release          String
+  spLevel          String?
+  supportPackage   String?
+  shortDescription String?
+
+  systemSid String
+  system    System @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+
+  @@index([systemSid])
+}
+
+model JavaComponent {
+  id String @id @default(uuid())
+
+  name     String
+  vendor   String?
+  version  String
+  location String?
+
+  systemSid String
+  system    System @relation(fields: [systemSid], references: [sid], onDelete: Cascade)
+
+  @@index([systemSid])
+}
+
+model SapNote {
+  id         String   @id @default(uuid())
+
+  noteNumber String   @unique
+  priority   String?
+  cvssScore  Float?
+  cvssVector String?
+
+  confidence Int
+  correction String?
+
+  rawText    String
+  createdAt  DateTime @default(now())
+
+  components SapNoteComponent[]
+
+  vulnerabilities SapVulnerability[]
+}
+
+model SapNoteComponent {
+  id          String  @id @default(uuid())
+
+  noteId      String
+  note        SapNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  component   String
+  fromVersion String?
+  toVersion   String?
+  fixedInSp  String?
+  @@unique([noteId, component])
+}
+
+model SapVulnerability {
+  id            String   @id @default(uuid())
+
+  systemId      String
+  system        System   @relation(fields: [systemId], references: [sid], onDelete: Cascade)
+  componentName String
+  componentVersion String
+
+  noteId        String
+  note          SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteNumber    String
+
+  fromVersion   String?
+  toVersion     String?
+
+  detectedAt    DateTime @default(now())
+
+  @@unique([systemId, componentName, noteId])
+  @@index([systemId])
+  @@index([noteId])
+}
+
+================
+File: apps/sap-note-service/src/workers/note.worker.ts
+================
+import { Worker } from "bullmq";
+import fs from "fs";
+import { PDFParse } from "pdf-parse";
+import prisma from "../config/db";
+import { connection } from "../config/redis";
+import { normalizePdfText } from "../utils/textNormalizer";
+import { extractSapNoteFields } from "../utils/noteExtractor";
+import { logger } from "../utils/logger";
+
+interface NoteJob {
+    filePath: string;
+}
+
+export const noteWorker = new Worker<NoteJob>(
+    "sap-note-queue",
+    async (job) => {
+        const { filePath } = job.data;
+
+        logger.info(`[SAP-NOTE] Parsing PDF: ${filePath}`);
+
+        try {
+            if (!fs.existsSync(filePath)) {
+                throw new Error("PDF file not found on disk");
+            }
+
+            // 1️⃣ Read PDF
+            const buffer = fs.readFileSync(filePath);
+            const parser = new PDFParse({ data: buffer });
+            const parsed = await parser.getText();
+            await parser.destroy();
+
+            // 2️⃣ Normalize text (CRITICAL)
+            const normalizedText = normalizePdfText(parsed.text);
+
+            // 3️⃣ Extract structured fields
+            const extracted = extractSapNoteFields(normalizedText);
+
+            // 4️⃣ Confidence gate
+            logger.info(
+                `[SAP-NOTE] confidence=${extracted.confidence} note=${extracted.noteNumber ?? "unknown"}`
+            );
+
+            if (!extracted.noteNumber || extracted.confidence < 40) {
+                throw new Error(
+                    `Low confidence extraction (${extracted.confidence})`
+                );
+            }
+
+
+            // 5️⃣ Store SAP Note (upsert)
+            const note = await prisma.sapNote.upsert({
+                where: { noteNumber: extracted.noteNumber },
+                update: {
+                    title: extracted.title,
+                    priority: extracted.priority,
+                    cvssScore: extracted.cvssScore,
+                    cvssVector: extracted.cvssVector,
+                    confidence: extracted.confidence,
+                    correction: extracted.correction,
+                    rawText: normalizedText,
+                },
+                create: {
+                    title: extracted.title,
+                    noteNumber: extracted.noteNumber,
+                    priority: extracted.priority,
+                    cvssScore: extracted.cvssScore,
+                    cvssVector: extracted.cvssVector,
+                    confidence: extracted.confidence,
+                    correction: extracted.correction,
+                    rawText: normalizedText,
+                },
+            });
+
+            // 6️⃣ Store affected components (normalized)
+            for (const component of extracted.components) {
+                await prisma.sapNoteComponent.upsert({
+                    where: {
+                        noteId_component: {
+                            noteId: note.id,
+                            component: component.name,
+                        },
+                    },
+                    update: {
+                        fromVersion: component.fromVersion,
+                        toVersion: component.toVersion,
+                    },
+                    create: {
+                        noteId: note.id,
+                        component: component.name,
+                        fromVersion: component.fromVersion,
+                        toVersion: component.toVersion,
+                    },
+                });
+            }
+
+            logger.info(
+                `[SAP-NOTE] Parsed SAP Note ${extracted.noteNumber} successfully`
+            );
+        } catch (err: any) {
+            logger.error(`[SAP-NOTE] Failed to parse PDF: ${err.message}`);
+            throw err;
+        } finally {
+            // 7️⃣ Cleanup
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+    },
+    {
+        connection,
+        concurrency: 1,
+    }
+);
+
+================
+File: apps/sap-note-service/src/server.ts
+================
+import dotenv from "dotenv"
+dotenv.config()
+
+import app from "./app"
+import { logger } from "./utils/logger"
+import "./workers/note.worker";
+import fs from "fs";
+
+const uploadDir = "uploads/notes";
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+
+import { env } from "./config/env";
+const PORT = env.PORT;
+
+const server = app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT} as ${process.env.NODE_ENV}`);
+});
+
+const gracefulShutdown = () => {
+    logger.info('Received kill signal, shutting down gracefully');
+    server.close(() => {
+        logger.info('Closed out remaining connections');
+        process.exit(0);
+    });
+
+    // Force close if it takes too long (e.g., 10 seconds)
+    setTimeout(() => {
+        logger.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+};
+
+// Listen for termination signals
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+================
+File: apps/sap-note-service/prisma/schema.prisma
+================
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model SapNote {
+  id           String   @id @default(uuid())
+
+  noteNumber   String   @unique
+  title        String? 
+  priority     String?
+  cvssScore    Float?
+  cvssVector   String?
+
+  confidence   Int
+  correction   String?
+
+  rawText      String
+  createdAt    DateTime @default(now())
+
+  components   SapNoteComponent[]
+}
+
+model SapNoteComponent {
+  id          String   @id @default(uuid())
+
+  noteId      String
+  note        SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  component   String
+  fromVersion String?
+  toVersion   String?
+  fixedInSp  String?
+  @@unique([noteId, component])
+}
+
+================
+File: apps/gateway/src/index.ts
+================
+import express from "express";
+import proxy from "express-http-proxy";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
+import pinoHttp from "pino-http";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const app = express();
+
+app.use(helmet());
+app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(pinoHttp());
+
+// Rate limit (important)
+app.use(
+    rateLimit({
+        windowMs: 1 * 60 * 1000,
+        max: 120,
+        message: "Too many requests",
+    })
+);
+
+// === Auth Middleware (Gateway level) ===
+interface AuthenticatedRequest extends express.Request {
+    user?: string | jwt.JwtPayload;
+}
+
+type AuthenticateMiddleware = (
+    req: AuthenticatedRequest,
+    res: express.Response,
+    next: express.NextFunction
+) => void;
+
+const authenticate: AuthenticateMiddleware = (req, res, next) => {
+    // Allow unauthenticated access to auth endpoints
+    if (
+        req.path === "/auth/login" ||
+        req.path === "/auth/register" ||
+        req.path.endsWith("/auth/login") ||
+        req.path.endsWith("/auth/register") ||
+        req.path.startsWith("/api/users/auth/")
+    ) {
+        return next();
+    }
+
+    const token: string | undefined = req.headers.authorization?.split(" ")[1];
+
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+        const decoded: string | jwt.JwtPayload = jwt.verify(
+            token,
+            process.env.JWT_SECRET!
+        );
+        req.user = decoded;
+        next();
+    } catch {
+        return res.status(401).json({ message: "Invalid token" });
+    }
+};
+
+// Route auth endpoints to user service
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL!;
+const authProxy = proxy(USER_SERVICE_URL, {
+    limit: '50mb',
+    timeout: 30000,
+    proxyErrorHandler: function (err, res, next) {
+        console.error("Proxy Error:", err);
+        res.status(500).json({ error: "Service unavailable" });
+    }
+});
+
+app.post("/auth/register", authProxy);
+app.post("/auth/login", authProxy);
+app.post("/auth/:path", authProxy);
+app.get("/auth/:path", authProxy);
+
+// Apply auth to all microservice routes
+app.use("/api", authenticate);
+
+// Dynamic service registry
+const SERVICE_URLS: Record<string, string> = {
+    users: process.env.USER_SERVICE_URL!,
+    products: process.env.PRODUCT_SERVICE_URL!,
+    files: process.env.FILE_SERVICE_URL!,
+    notes: process.env.SAP_NOTE_SERVICE_URL!,
+    core: process.env.SAP_CORE_SERVICE_URL!,
+};
+
+app.use("/api/:service", (req, res, next) => {
+    const target = SERVICE_URLS[req.params.service];
+    if (!target) return res.status(404).send("Service not found");
+
+    return proxy(target, {
+        limit: '50mb', // Allow larger file uploads (Excel/PDF)
+        timeout: 30000, // 30s timeout for slow operations
+        proxyReqOptDecorator: (proxyReqOpts) => {
+            // ... your existing auth headers logic
+            return proxyReqOpts;
+        },
+        // improved error handling
+        proxyErrorHandler: function (err, res, next) {
+            console.error("Proxy Error:", err);
+            res.status(500).json({ error: "Service unavailable" });
+        }
+    })(req, res, next);
+});
+// Healthcheck
+app.get("/health", (req, res) =>
+    res.json({ status: "ok", service: "gateway" })
+);
+
+app.listen(process.env.PORT, () =>
+    console.log(`Gateway running at ${process.env.PORT}`)
+);
+
+
+
+
+
+================================================================
+End of Codebase
+================================================================

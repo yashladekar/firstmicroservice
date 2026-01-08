@@ -13,8 +13,20 @@ const app = express();
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Only parse JSON/urlencoded for non-proxy routes (auth routes)
+// Skip for /api/* routes to allow file uploads to pass through
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+        return next();
+    }
+    express.json()(req, res, next);
+});
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+        return next();
+    }
+    express.urlencoded({ extended: true })(req, res, next);
+});
 app.use(pinoHttp());
 
 // Rate limit (important)
@@ -100,8 +112,17 @@ app.use("/api/:service", (req, res, next) => {
     return proxy(target, {
         limit: '50mb', // Allow larger file uploads (Excel/PDF)
         timeout: 30000, // 30s timeout for slow operations
+        parseReqBody: false, // Don't parse body - important for file uploads
+        proxyReqPathResolver: (req) => {
+            // Reconstruct path as /:service/* instead of just /*
+            const service = req.params.service;
+            const pathAfterService = req.url;
+            return `/${service}${pathAfterService}`;
+        },
         proxyReqOptDecorator: (proxyReqOpts) => {
-            // ... your existing auth headers logic
+            // Add internal auth header for service-to-service communication
+            proxyReqOpts.headers = proxyReqOpts.headers || {};
+            proxyReqOpts.headers['x-internal-key'] = process.env.INTERNAL_SECRET || 'secret';
             return proxyReqOpts;
         },
         // improved error handling

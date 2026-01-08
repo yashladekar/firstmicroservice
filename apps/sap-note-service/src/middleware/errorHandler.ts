@@ -4,10 +4,14 @@ import APIError from "../utils/APIError";
 export const errorConverter = (err: any, req: Request, res: Response, next: NextFunction) => {
     let error = err;
 
+    // Log the original error for debugging
+    console.error("[ERROR]", err.message, err.stack);
+
     if (!(error instanceof APIError)) {
         const statusCode = error.statusCode || 500;
         const message = error.message || "Internal server error";
         error = new APIError(statusCode, message, false);
+        error.stack = err.stack;
     }
 
     next(error);
