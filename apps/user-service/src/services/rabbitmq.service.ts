@@ -1,6 +1,6 @@
 import { Channel, ChannelModel, connect } from "amqplib";
 import config from "../config/config";
-import { User } from "../database";
+import { prisma } from "../database/prisma";
 import { ApiError } from "../utils";
 
 class RabbitMQService {
@@ -12,17 +12,16 @@ class RabbitMQService {
     private consumerStarted = false;
 
     constructor() {
-        // Intentionally do not auto-connect here.
-        // Auto-connecting from a constructor creates an unhandled Promise rejection
-        // when RabbitMQ isn't ready yet (common in Docker Compose startup).
+        // Do not auto-connect here
     }
 
     async init(): Promise<void> {
         if (!config.msgBrokerURL) {
             throw new Error(
-                "Missing MESSAGE_BROKER_URL. Set it in apps/user-service/.env (or process.env)."
+                "Missing MESSAGE_BROKER_URL. Set it in apps/user-service/.env"
             );
         }
+
         const msgBrokerURL = config.msgBrokerURL;
 
         if (this.channel) return;
@@ -37,6 +36,7 @@ class RabbitMQService {
                     this.consumerStarted = false;
 
                     this.connection = await connect(msgBrokerURL);
+
                     this.connection.on("close", () => {
                         this.connection = undefined;
                         this.channel = undefined;
@@ -44,20 +44,14 @@ class RabbitMQService {
                         this.consumerStarted = false;
                         void this.init().catch(() => undefined);
                     });
-                    this.connection.on("error", () => {
-                        // Connection errors are handled by 'close' in most cases.
-                        // Avoid throwing here to prevent crashing the process.
-                    });
 
                     this.channel = await this.connection.createChannel();
+
                     this.channel.on("close", () => {
                         this.channel = undefined;
                         this.initializing = undefined;
                         this.consumerStarted = false;
                         void this.init().catch(() => undefined);
-                    });
-                    this.channel.on("error", () => {
-                        // Same rationale as connection error handler.
                     });
 
                     await this.channel.assertQueue(this.requestQueue);
@@ -85,30 +79,46 @@ class RabbitMQService {
         this.consumerStarted = true;
 
         this.channel.consume(this.requestQueue, async (msg) => {
-            if (msg && msg.content) {
+            if (!msg) return;
+
+            try {
                 const { userId } = JSON.parse(msg.content.toString());
                 const userDetails = await getUserDetails(userId);
 
-                // Send the user details response
                 this.channel?.sendToQueue(
                     this.responseQueue,
                     Buffer.from(JSON.stringify(userDetails)),
                     { correlationId: msg.properties.correlationId }
                 );
 
-                // Acknowledge the processed message
+                this.channel?.ack(msg);
+            } catch (err) {
                 this.channel?.ack(msg);
             }
         });
     }
 }
 
+/**
+ * 🔁 Mongo → Prisma replacement
+ */
 const getUserDetails = async (userId: string) => {
-    const userDetails = await User.findById(userId).select("-password");
-    if (!userDetails) {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            email: true,
+            isVerified: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+
+    if (!user) {
         throw new ApiError(404, "User not found");
     }
 
-    return userDetails;
+    return user;
 };
+
 export const rabbitMQService = new RabbitMQService();

@@ -1,4 +1,3 @@
-import User, { IUser } from "./models/UserModel";
-import { connectDB } from "./connection";
+import { prisma } from "./prisma";
 
-export { User, IUser, connectDB };
+export { prisma };
