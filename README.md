@@ -1,63 +1,129 @@
-# Turborepo starter
+# Microservices Monorepo Overview
 
-This Turborepo starter is maintained by the Turborepo core team.
+This repository contains several microservices, each responsible for a specific domain in the system. Below is a summary of each service and its purpose, along with basic setup instructions.
 
-## Using this example
+---
 
-Run the following command:
+## Services
 
-```sh
-npx create-turbo@latest
-```
+### 1. user-service
 
-## What's inside?
+Handles user registration, authentication, and user data management.
 
-This Turborepo includes the following packages/apps:
+- **Port:** 8081
+- **Tech:** Node.js, Express, Prisma, MongoDB, RabbitMQ
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `MESSAGE_BROKER_URL`, `MONGO_URI`, etc.
 
-### Apps and Packages
+### 2. clien-file-service
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Manages file uploads, downloads, and storage.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- **Port:** 8082
+- **Tech:** Node.js, Express, Prisma, PostgreSQL, Redis
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, `INTERNAL_SECRET`, etc.
 
-### Utilities
+### 3. sap-note-service
 
-This Turborepo has some additional tools already setup for you:
+Processes and stores SAP notes, including PDF parsing and extraction.
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- **Port:** 8083
+- **Tech:** Node.js, Express, Prisma, PostgreSQL, Redis
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, etc.
 
-### Build
+### 4. sap-core-service
 
-To build all apps and packages, run the following command:
+Handles core SAP system data and operations.
 
-```
-cd my-turborepo
+- **Port:** 8084
+- **Tech:** Node.js, Express, Prisma, PostgreSQL, Redis
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, etc.
+
+### 5. gateway
+
+API gateway that routes requests to the appropriate microservice and handles authentication.
+
+- **Port:** 8080
+- **Tech:** Node.js, Express
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `INTERNAL_SECRET`, service URLs, etc.
+
+### 6. web
+
+Frontend application (Next.js) for user interaction.
+
+- **Port:** 3000
+- **Tech:** Next.js, React
+
+### 7. docs
+
+Documentation site (Next.js) for the project.
+
+- **Port:** 3001
+- **Tech:** Next.js
+
+---
+
+## Common Setup
+
+1. **Install dependencies:**
+   ```sh
+   pnpm install
+   ```
+2. **Set up environment variables:**
+   - Copy `.env.example` to `.env` in each service directory and update values as needed.
+3. **Run all services:**
+   ```sh
+   pnpm run dev
+   ```
+4. **Database migrations:**
+   - For services using Prisma, run:
+     ```sh
+     pnpm prisma migrate dev --name init
+     ```
+     in the respective service directory.
+
+---
+
+## Notes
+
+- Each service has its own README and .env.example for more details.
+- Use Docker Compose for local development if available.
+- Ensure all required databases and message brokers are running.
+
+---
+
+For more details, see the README in each service folder.
 
 # With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
 turbo build
 
 # Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
 npx turbo build
 yarn dlx turbo build
 pnpm exec turbo build
+
 ```
 
 You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
 
 ```
+
 # With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
 turbo build --filter=docs
 
 # Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
 npx turbo build --filter=docs
 yarn exec turbo build --filter=docs
 pnpm exec turbo build --filter=docs
+
 ```
 
 ### Develop
@@ -65,27 +131,35 @@ pnpm exec turbo build --filter=docs
 To develop all apps and packages, run the following command:
 
 ```
+
 cd my-turborepo
 
 # With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
 turbo dev
 
 # Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
 npx turbo dev
 yarn exec turbo dev
 pnpm exec turbo dev
+
 ```
 
 You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
 
 ```
+
 # With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
 turbo dev --filter=web
 
 # Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
 npx turbo dev --filter=web
 yarn exec turbo dev --filter=web
 pnpm exec turbo dev --filter=web
+
 ```
 
 ### Remote Caching
@@ -98,15 +172,19 @@ Turborepo can use a technique known as [Remote Caching](https://turborepo.com/do
 By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
 
 ```
+
 cd my-turborepo
 
 # With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
 turbo login
 
 # Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
 npx turbo login
 yarn exec turbo login
 pnpm exec turbo login
+
 ```
 
 This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
@@ -114,13 +192,17 @@ This will authenticate the Turborepo CLI with your [Vercel account](https://verc
 Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
 
 ```
+
 # With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
 turbo link
 
 # Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
 npx turbo link
 yarn exec turbo link
 pnpm exec turbo link
+
 ```
 
 ## Useful Links
@@ -133,3 +215,4 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
 - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+```
