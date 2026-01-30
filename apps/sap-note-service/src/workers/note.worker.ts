@@ -35,12 +35,20 @@ export const noteWorker = new Worker<NoteJob>(
             // 3️⃣ Extract structured fields
             const extracted = extractSapNoteFields(normalizedText);
 
+
             // 4️⃣ Confidence gate
             logger.info(
                 `[SAP-NOTE] confidence=${extracted.confidence} note=${extracted.noteNumber ?? "unknown"}`
             );
 
-            if (!extracted.noteNumber || extracted.confidence < 40) {
+            // Debug log before DB write
+            logger.info({
+                note: extracted.noteNumber,
+                components: extracted.components,
+                confidence: extracted.confidence,
+            });
+
+            if (!extracted.noteNumber || extracted.components.length === 0) {
                 throw new Error(
                     `Low confidence extraction (${extracted.confidence})`
                 );
@@ -81,14 +89,14 @@ export const noteWorker = new Worker<NoteJob>(
                         },
                     },
                     update: {
-                        fromVersion: component.fromVersion,
-                        toVersion: component.toVersion,
+                        fromVersion: component.fromVersion ?? component.toVersion,
+                        toVersion: component.toVersion ?? component.fromVersion,
                     },
                     create: {
                         noteId: note.id,
                         component: component.name,
-                        fromVersion: component.fromVersion,
-                        toVersion: component.toVersion,
+                        fromVersion: component.fromVersion ?? component.toVersion,
+                        toVersion: component.toVersion ?? component.fromVersion,
                     },
                 });
             }

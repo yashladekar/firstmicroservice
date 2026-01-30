@@ -1,45 +1,138 @@
 import prisma from "../config/db";
+import { isVersionInRange } from "../utils/versionMatcher";
 
+/**
+ * Extract numeric SP value from SAPK string
+ * Example:
+ * SAPK-75015INSAPBASIS → 15
+ */
+function extractSPNumber(sp?: string | null): number | null {
+    if (!sp) return null;
+
+    const match = sp.match(/SAPK-\d+(\d+)/);
+    if (!match) return null;
+
+    return Number(match[1]);
+}
+
+/**
+ * Core vulnerability decision logic
+ */
+function isComponentVulnerable(
+    installedRelease: string,
+    installedSP?: string | null,
+    noteFrom?: string | null,
+    noteTo?: string | null,
+    noteFixSP?: string | null
+): boolean {
+
+    /* =========================
+       LEVEL 1 — RANGE MATCH
+    ========================= */
+    if (noteFrom && noteTo) {
+        if (isVersionInRange(installedRelease, noteFrom, noteTo)) {
+            return true;
+        }
+    }
+
+    /* =========================
+       LEVEL 2 — SINGLE VERSION
+    ========================= */
+    if (noteFrom && !noteTo) {
+        if (installedRelease === noteFrom) {
+            return true;
+        }
+    }
+
+    /* =========================
+       LEVEL 3 — SUPPORT PACKAGE
+    ========================= */
+    if (noteFixSP && installedSP) {
+        const fixSP = extractSPNumber(noteFixSP);
+        const installedSPNum = extractSPNumber(installedSP);
+
+        if (
+            fixSP !== null &&
+            installedSPNum !== null &&
+            installedSPNum < fixSP
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * FULL SYSTEM SCAN
+ * (Fallback / manual trigger / safety net)
+ */
 export async function runVulnerabilityScan() {
-    // We use a raw SQL query to join tables directly in the database.
-    // This runs in milliseconds instead of minutes.
-    const matches = await prisma.$queryRaw`
-        INSERT INTO "SapVulnerability" (
-            "id",
-            "systemId",
-            "componentName",
-            "componentVersion",
-            "noteId",
-            "noteNumber",
-            "fromVersion",
-            "toVersion",
-            "detectedAt"
-        )
-        SELECT
-            gen_random_uuid(),      -- Generate new ID
-            s."sid",                -- System ID
-            ac."component",         -- Component Name
-            ac."release",           -- Installed Version
-            sn."id",                -- Note ID
-            sn."noteNumber",        -- Note Number
-            snc."fromVersion",      -- Vulnerable From
-            snc."toVersion",        -- Vulnerable To
-            NOW()                   -- Current Time
-        FROM "AbapComponent" ac
-        -- Join System to ensure it exists
-        JOIN "System" s ON ac."systemSid" = s."sid"
-        -- Join Note Components where names match
-        JOIN "SapNoteComponent" snc ON ac."component" = snc."component"
-        -- Join Note Details
-        JOIN "SapNote" sn ON snc."noteId" = sn."id"
-        -- THE MATCHING LOGIC: Check if version is within range
-        WHERE
-            ac."release" >= snc."fromVersion"
-            AND ac."release" <= snc."toVersion"
-        -- Avoid duplicates
-        ON CONFLICT ("systemId", "componentName", "noteId") DO NOTHING;
-    `;
 
-    // Return a simple count (Prisma raw query result usually includes row count)
-    return { status: "scanned", message: "Vulnerability scan completed via DB" };
+    const systems = await prisma.system.findMany({
+        include: {
+            abapComponents: true,
+        },
+    });
+
+    const notes = await prisma.sapNote.findMany({
+        include: {
+            components: true,
+        },
+    });
+
+    let matches = 0;
+
+    for (const system of systems) {
+        for (const comp of system.abapComponents) {
+
+            for (const note of notes) {
+                for (const noteComp of note.components) {
+
+                    /* COMPONENT NAME MUST MATCH */
+                    if (noteComp.component !== comp.component) continue;
+
+                    const vulnerable = isComponentVulnerable(
+                        comp.release,
+                        comp.supportPackage,
+                        noteComp.fromVersion,
+                        noteComp.toVersion,
+                        noteComp.fixedInSp
+                    );
+
+                    if (!vulnerable) continue;
+
+                    try {
+                        await prisma.sapVulnerability.create({
+                            data: {
+                                systemId: system.sid,
+                                componentName: comp.component,
+                                componentVersion: comp.release,
+                                noteId: note.id,
+                                noteNumber: note.noteNumber,
+                                fromVersion: noteComp.fromVersion,
+                                toVersion: noteComp.toVersion,
+                            },
+                        });
+
+                        matches++;
+
+                    } catch (err) {
+                        /**
+                         * Ignore duplicates safely
+                         * Unique constraint:
+                         * systemId + componentName + noteId
+                         */
+                    }
+                }
+            }
+        }
+    }
+
+    return {
+        status: "completed",
+        matches,
+        systemsScanned: systems.length,
+        notesEvaluated: notes.length,
+    };
 }
