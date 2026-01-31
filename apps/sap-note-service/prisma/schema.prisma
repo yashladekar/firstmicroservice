@@ -38,6 +38,7 @@ model SapNoteComponent {
   note   SapNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
   component   String
+  stack       String 
   fromVersion String?
   toVersion   String?
   fixedInSp   String?

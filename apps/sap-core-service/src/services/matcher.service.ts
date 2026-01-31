@@ -1,138 +1,146 @@
 import prisma from "../config/db";
-import { isVersionInRange } from "../utils/versionMatcher";
 
 /**
- * Extract numeric SP value from SAPK string
- * Example:
- * SAPK-75015INSAPBASIS → 15
+ * Maps SAP Note components to installed system components.
+ * This is DOMAIN KNOWLEDGE — not a hack.
  */
-function extractSPNumber(sp?: string | null): number | null {
-    if (!sp) return null;
+const COMPONENT_MAP: Record<string, string[]> = {
+    // ABAP framework → BASIS
+    SAP_GWFND: ["SAP_BASIS"],
+    SAP_UI: ["SAP_UI"],
+    SAP_BASIS: ["SAP_BASIS"],
 
-    const match = sp.match(/SAPK-\d+(\d+)/);
-    if (!match) return null;
+    // HR
+    PA_ER: ["SAP_HR"],
+    S4ERECRT: ["SAP_HR"],
 
-    return Number(match[1]);
-}
+    // Java
+    ENGINEAPI: ["ENGINEAPI"],
+    EP_BASIS: ["EP-BASIS"],
+};
 
 /**
- * Core vulnerability decision logic
+ * Check if two version ranges overlap
  */
-function isComponentVulnerable(
-    installedRelease: string,
-    installedSP?: string | null,
-    noteFrom?: string | null,
-    noteTo?: string | null,
-    noteFixSP?: string | null
+function versionOverlaps(
+    noteFrom?: string,
+    noteTo?: string,
+    systemVersion?: string
 ): boolean {
+    if (!systemVersion) return false;
 
-    /* =========================
-       LEVEL 1 — RANGE MATCH
-    ========================= */
-    if (noteFrom && noteTo) {
-        if (isVersionInRange(installedRelease, noteFrom, noteTo)) {
-            return true;
-        }
-    }
+    const sys = Number(systemVersion);
+    if (Number.isNaN(sys)) return false;
 
-    /* =========================
-       LEVEL 2 — SINGLE VERSION
-    ========================= */
-    if (noteFrom && !noteTo) {
-        if (installedRelease === noteFrom) {
-            return true;
-        }
-    }
+    const from = noteFrom ? Number(noteFrom) : undefined;
+    const to = noteTo ? Number(noteTo) : undefined;
 
-    /* =========================
-       LEVEL 3 — SUPPORT PACKAGE
-    ========================= */
-    if (noteFixSP && installedSP) {
-        const fixSP = extractSPNumber(noteFixSP);
-        const installedSPNum = extractSPNumber(installedSP);
-
-        if (
-            fixSP !== null &&
-            installedSPNum !== null &&
-            installedSPNum < fixSP
-        ) {
-            return true;
-        }
-    }
+    if (from && to) return sys >= from && sys <= to;
+    if (from) return sys >= from;
+    if (to) return sys <= to;
 
     return false;
 }
 
 /**
- * FULL SYSTEM SCAN
- * (Fallback / manual trigger / safety net)
+ * MAIN MATCHER
  */
-export async function runVulnerabilityScan() {
-
-    const systems = await prisma.system.findMany({
+export async function matchSapNotesForSystem(systemSid: string) {
+    /**
+     * 1️⃣ Load system inventory
+     * (ABAP + JAVA components)
+     */
+    const system = await prisma.system.findUnique({
+        where: { sid: systemSid },
         include: {
             abapComponents: true,
+            javaComponents: true,
         },
     });
 
+    if (!system) {
+        throw new Error(`System ${systemSid} not found`);
+    }
+
+    /**
+     * 2️⃣ Load ALL SAP Notes with components
+     */
     const notes = await prisma.sapNote.findMany({
         include: {
             components: true,
         },
     });
 
-    let matches = 0;
+    const matches: any[] = [];
 
-    for (const system of systems) {
-        for (const comp of system.abapComponents) {
+    /**
+     * 3️⃣ Iterate notes → components → system
+     */
+    for (const note of notes) {
+        for (const noteComponent of note.components) {
+            /**
+             * 🚫 Client-only vulnerabilities are ignored
+             */
+            if (noteComponent.stack === "CLIENT") {
+                continue;
+            }
 
-            for (const note of notes) {
-                for (const noteComp of note.components) {
+            /**
+             * 4️⃣ ABAP STACK MATCHING
+             */
+            if (noteComponent.stack === "ABAP") {
+                const mappedTargets =
+                    COMPONENT_MAP[noteComponent.component] ?? [];
 
-                    /* COMPONENT NAME MUST MATCH */
-                    if (noteComp.component !== comp.component) continue;
+                for (const abap of system.abapComponents) {
+                    if (!mappedTargets.includes(abap.component)) continue;
 
-                    const vulnerable = isComponentVulnerable(
-                        comp.release,
-                        comp.supportPackage,
-                        noteComp.fromVersion,
-                        noteComp.toVersion,
-                        noteComp.fixedInSp
-                    );
-
-                    if (!vulnerable) continue;
-
-                    try {
-                        await prisma.sapVulnerability.create({
-                            data: {
-                                systemId: system.sid,
-                                componentName: comp.component,
-                                componentVersion: comp.release,
-                                noteId: note.id,
-                                noteNumber: note.noteNumber,
-                                fromVersion: noteComp.fromVersion,
-                                toVersion: noteComp.toVersion,
-                            },
+                    if (
+                        versionOverlaps(
+                            noteComponent.fromVersion,
+                            noteComponent.toVersion,
+                            abap.release
+                        )
+                    ) {
+                        matches.push({
+                            systemSid,
+                            sapNote: note.noteNumber,
+                            component: noteComponent.component,
+                            stack: "ABAP",
+                            systemComponent: abap.component,
+                            systemVersion: abap.release,
+                            cvss: note.cvssScore,
                         });
+                    }
+                }
+            }
 
-                        matches++;
-
-                    } catch (err) {
-                        /**
-                         * Ignore duplicates safely
-                         * Unique constraint:
-                         * systemId + componentName + noteId
-                         */
+            /**
+             * 5️⃣ JAVA STACK MATCHING
+             */
+            if (noteComponent.stack === "JAVA") {
+                for (const java of system.javaComponents) {
+                    if (
+                        versionOverlaps(
+                            noteComponent.fromVersion,
+                            noteComponent.toVersion,
+                            java.version
+                        )
+                    ) {
+                        matches.push({
+                            systemSid,
+                            sapNote: note.noteNumber,
+                            component: noteComponent.component,
+                            stack: "JAVA",
+                            systemComponent: java.name,
+                            systemVersion: java.version,
+                            cvss: note.cvssScore,
+                        });
                     }
                 }
             }
         }
     }
 
-    return {
-        status: "completed",
-        matches,
-        systemsScanned: systems.length,
-        notesEvaluated: notes.length,
-    };
+    return matches;
 }

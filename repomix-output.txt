@@ -133,15 +133,21 @@ apps/
         errorHandler.ts
         internalAuth.ts
         rateLimit.ts
+      queues/
+        match.queue.ts
       routes/
         health.routes.ts
         index.ts
       services/
+        incrementalMatcher.service.ts
         matcher.service.ts
       utils/
         APIError.ts
         logger.ts
         versionMatcher.ts
+      workers/
+        noteMatch.worker.ts
+        systemMatch.worker.ts
       app.ts
       server.ts
     .env.example
@@ -158,6 +164,8 @@ apps/
           migration.sql
         20260108190035_sync_schema/
           migration.sql
+        20260131142458_add_stack_to_sap_note_component/
+          migration.sql
         migration_lock.toml
       schema.prisma
     src/
@@ -167,6 +175,10 @@ apps/
         redis.ts
       controllers/
         upload.controller.ts
+      domain/
+        normalizedNote.ts
+      extractors/
+        sapNoteNormalizer.ts
       middleware/
         correlationId.ts
         errorHandler.ts
@@ -179,6 +191,7 @@ apps/
         health.routes.ts
       utils/
         APIError.ts
+        componentClassifier.ts
         logger.ts
         noteExtractor.ts
         sectionExtractor.ts
@@ -191,6 +204,7 @@ apps/
     .gitignore
     package.json
     prisma.config.ts
+    repomix-output.txt
     tsconfig.json
   user-service/
     prisma/
@@ -205,9 +219,6 @@ apps/
       controllers/
         AuthController.ts
       database/
-        models/
-          UserModel.ts
-        connection.ts
         index.ts
         prisma.ts
       middleware/
@@ -296,32 +307,289 @@ Files
 ================================================================
 
 ================
-File: apps/user-service/prisma/migrations/20260128223949_init_user/migration.sql
+File: apps/sap-note-service/prisma/migrations/20260131142458_add_stack_to_sap_note_component/migration.sql
+================
+/*
+  Warnings:
+
+  - Added the required column `stack` to the `SapNoteComponent` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "SapNoteComponent" ADD COLUMN     "stack" TEXT NOT NULL;
+
+================
+File: apps/sap-note-service/src/domain/normalizedNote.ts
+================
+// domain/normalizedNote.ts
+export interface NormalizedSapNote {
+    sapNoteId: string;
+    cve?: string;
+    releasedOn?: Date;
+    cvss?: number;
+
+    components: {
+        name: string;       // SAP_GWFND
+        stack: 'ABAP' | 'JAVA' | 'CLIENT' | 'UNKNOWN';
+        fromVersion?: string;
+        toVersion?: string;
+    }[];
+}
+
+================
+File: apps/sap-note-service/src/extractors/sapNoteNormalizer.ts
+================
+import { NormalizedSapNote } from "../domain/normalizedNote";
+
+export function normalizeSapNote(rawText: string): NormalizedSapNote {
+    const sapNoteId =
+        rawText.match(/\b\d{7}\b/)?.[0] ?? "UNKNOWN";
+
+    const cve =
+        rawText.match(/CVE-\d{4}-\d+/)?.[0];
+
+    const cvssMatch =
+        rawText.match(/CVSS Score\s*:\s*([\d.]+)/);
+    const cvss = cvssMatch ? Number(cvssMatch[1]) : undefined;
+
+    const releasedOnMatch =
+        rawText.match(/Released On:\s*(\d{2}\.\d{2}\.\d{4})/);
+    const releasedOn = releasedOnMatch
+        ? new Date(releasedOnMatch[1].split(".").reverse().join("-"))
+        : undefined;
+
+    const components: NormalizedSapNote["components"] = [];
+
+    const componentRegex =
+        /Software Component\s+([A-Z0-9_-]+)\s+(\d+)\s+(\d+)/g;
+
+    let match;
+    while ((match = componentRegex.exec(rawText)) !== null) {
+        const name = match[1];
+
+        components.push({
+            name,
+            stack: classifyStack(name),
+            fromVersion: match[2],
+            toVersion: match[3],
+        });
+    }
+
+    return {
+        sapNoteId,
+        cve,
+        cvss,
+        releasedOn,
+        components,
+    };
+}
+
+function classifyStack(component: string): "ABAP" | "JAVA" | "CLIENT" | "UNKNOWN" {
+    if (component.startsWith("SAP_")) return "ABAP";
+    if (["ENGINEAPI", "EP-BASIS"].includes(component)) return "JAVA";
+    if (component.startsWith("BC-FES")) return "CLIENT";
+    return "UNKNOWN";
+}
+
+================
+File: apps/sap-note-service/src/utils/componentClassifier.ts
+================
+export type StackType = "ABAP" | "JAVA" | "CLIENT" | "UNKNOWN";
+
+export function classifyStack(component: string): StackType {
+    if (component.startsWith("SAP_")) return "ABAP";
+
+    if (
+        [
+            "ENGINEAPI",
+            "EP-BASIS",
+            "PORTAL",
+            "J2EE",
+            "UME"
+        ].some((c) => component.startsWith(c))
+    ) {
+        return "JAVA";
+    }
+
+    if (component.startsWith("BC-FES")) return "CLIENT";
+
+    return "UNKNOWN";
+}
+
+================
+File: apps/sap-note-service/repomix-output.txt
+================
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+
+
+================================================================
+Directory Structure
+================================================================
+prisma/
+  migrations/
+    20260102154811_sap_dev_notes/
+      migration.sql
+    20260102212013_change_in_title/
+      migration.sql
+    20260108190035_sync_schema/
+      migration.sql
+    20260131142458_add_stack_to_sap_note_component/
+      migration.sql
+    migration_lock.toml
+  schema.prisma
+src/
+  config/
+    db.ts
+    env.ts
+    redis.ts
+  controllers/
+    upload.controller.ts
+  domain/
+    normalizedNote.ts
+  extractors/
+    sapNoteNormalizer.ts
+  middleware/
+    correlationId.ts
+    errorHandler.ts
+    internalAuth.ts
+    rateLimit.ts
+  queues/
+    note.queue.ts
+  routes/
+    file.routes.ts
+    health.routes.ts
+  utils/
+    APIError.ts
+    logger.ts
+    noteExtractor.ts
+    sectionExtractor.ts
+    textNormalizer.ts
+  workers/
+    note.worker.ts
+  app.ts
+  server.ts
+.env.example
+.gitignore
+package.json
+prisma.config.ts
+tsconfig.json
+
+================================================================
+Files
+================================================================
+
+================
+File: prisma/migrations/20260102154811_sap_dev_notes/migration.sql
 ================
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE "SapNote" (
     "id" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "isVerified" BOOLEAN NOT NULL DEFAULT false,
+    "noteNumber" TEXT NOT NULL,
+    "priority" TEXT,
+    "cvssScore" DOUBLE PRECISION,
+    "cvssVector" TEXT,
+    "confidence" INTEGER NOT NULL,
+    "correction" TEXT,
+    "rawText" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "SapNote_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SapNoteComponent" (
+    "id" TEXT NOT NULL,
+    "noteId" TEXT NOT NULL,
+    "component" TEXT NOT NULL,
+    "fromVersion" TEXT,
+    "toVersion" TEXT,
+
+    CONSTRAINT "SapNoteComponent_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "SapNote_noteNumber_key" ON "SapNote"("noteNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SapNoteComponent_noteId_component_key" ON "SapNoteComponent"("noteId", "component");
+
+-- AddForeignKey
+ALTER TABLE "SapNoteComponent" ADD CONSTRAINT "SapNoteComponent_noteId_fkey" FOREIGN KEY ("noteId") REFERENCES "SapNote"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ================
-File: apps/user-service/prisma/migrations/migration_lock.toml
+File: prisma/migrations/20260102212013_change_in_title/migration.sql
+================
+-- AlterTable
+ALTER TABLE "SapNote" ADD COLUMN     "title" TEXT;
+
+================
+File: prisma/migrations/20260108190035_sync_schema/migration.sql
+================
+-- AlterTable
+ALTER TABLE "SapNoteComponent" ADD COLUMN     "fixedInSp" TEXT;
+
+================
+File: prisma/migrations/20260131142458_add_stack_to_sap_note_component/migration.sql
+================
+/*
+  Warnings:
+
+  - Added the required column `stack` to the `SapNoteComponent` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "SapNoteComponent" ADD COLUMN     "stack" TEXT NOT NULL;
+
+================
+File: prisma/migrations/migration_lock.toml
 ================
 # Please do not edit this file manually
 # It should be added in your version-control system (e.g., Git)
 provider = "postgresql"
 
 ================
-File: apps/user-service/prisma/schema.prisma
+File: prisma/schema.prisma
 ================
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
@@ -338,26 +606,835 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id         String  @id @default(uuid())
-  email      String  @unique
-  password   String
-  isVerified Boolean @default(false)
+model SapNote {
+  id String @id @default(uuid())
 
+  noteNumber String  @unique
+  title      String?
+  priority   String?
+  cvssScore  Float?
+  cvssVector String?
+
+  confidence Int
+  correction String?
+
+  rawText   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  components SapNoteComponent[]
+}
+
+model SapNoteComponent {
+  id String @id @default(uuid())
+
+  noteId String
+  note   SapNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  component   String
+  stack       String 
+  fromVersion String?
+  toVersion   String?
+  fixedInSp   String?
+
+  @@unique([noteId, component])
 }
 
 ================
-File: apps/user-service/src/database/prisma.ts
+File: src/config/db.ts
 ================
-// src/database/prisma.ts
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import { env } from "./env";
 
-export const prisma = new PrismaClient()
+const pool = new Pool({
+    connectionString: env.DATABASE_URL,
+});
+
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
+
+export default prisma;
 
 ================
-File: apps/user-service/.gitignore
+File: src/config/env.ts
+================
+import { z } from "zod"
+import dotenv from "dotenv"
+
+dotenv.config()
+
+const envSchema = z.object({
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+    PORT: z.string().default("8083"),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+    DATABASE_URL: z.url(),
+    REDIS_URL: z.url(),
+    FILE_STORAGE_PATH: z.string().default("/data/files"),
+    JWT_SECRET: z.string(),
+})
+const _env = envSchema.parse(process.env);
+
+export const env = {
+    NODE_ENV: _env.NODE_ENV,
+    PORT: parseInt(_env.PORT, 10),
+    LOG_LEVEL: _env.LOG_LEVEL,
+    DATABASE_URL: _env.DATABASE_URL,
+    REDIS_URL: _env.REDIS_URL,
+    FILE_STORAGE_PATH: _env.FILE_STORAGE_PATH,
+    JWT_SECRET: _env.JWT_SECRET,
+}
+
+================
+File: src/config/redis.ts
+================
+import IORedis from "ioredis";
+import { env } from "./env";
+
+export const connection = new IORedis(env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+});
+
+================
+File: src/controllers/upload.controller.ts
+================
+import { Request, Response, NextFunction } from "express";
+import { noteQueue } from "../queues/note.queue";
+
+export async function uploadSapNote(req: Request, res: Response, next: NextFunction) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "No file uploaded. Please upload a PDF file with field name 'file'",
+            });
+        }
+
+        await noteQueue.add("parse-note", {
+            filePath: req.file.path,
+        });
+
+        res.json({
+            message: "SAP Note uploaded and queued",
+            filename: req.file.originalname,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+================
+File: src/domain/normalizedNote.ts
+================
+// domain/normalizedNote.ts
+export interface NormalizedSapNote {
+    sapNoteId: string;
+    cve?: string;
+    releasedOn?: Date;
+    cvss?: number;
+
+    components: {
+        name: string;       // SAP_GWFND
+        stack: 'ABAP' | 'JAVA' | 'CLIENT' | 'UNKNOWN';
+        fromVersion?: string;
+        toVersion?: string;
+    }[];
+}
+
+================
+File: src/extractors/sapNoteNormalizer.ts
+================
+import { NormalizedSapNote } from "../domain/normalizedNote";
+
+export function normalizeSapNote(rawText: string): NormalizedSapNote {
+    const sapNoteId =
+        rawText.match(/\b\d{7}\b/)?.[0] ?? "UNKNOWN";
+
+    const cve =
+        rawText.match(/CVE-\d{4}-\d+/)?.[0];
+
+    const cvssMatch =
+        rawText.match(/CVSS Score\s*:\s*([\d.]+)/);
+    const cvss = cvssMatch ? Number(cvssMatch[1]) : undefined;
+
+    const releasedOnMatch =
+        rawText.match(/Released On:\s*(\d{2}\.\d{2}\.\d{4})/);
+    const releasedOn = releasedOnMatch
+        ? new Date(releasedOnMatch[1].split(".").reverse().join("-"))
+        : undefined;
+
+    const components: NormalizedSapNote["components"] = [];
+
+    const componentRegex =
+        /Software Component\s+([A-Z0-9_-]+)\s+(\d+)\s+(\d+)/g;
+
+    let match;
+    while ((match = componentRegex.exec(rawText)) !== null) {
+        const name = match[1];
+
+        components.push({
+            name,
+            stack: classifyStack(name),
+            fromVersion: match[2],
+            toVersion: match[3],
+        });
+    }
+
+    return {
+        sapNoteId,
+        cve,
+        cvss,
+        releasedOn,
+        components,
+    };
+}
+
+function classifyStack(component: string): "ABAP" | "JAVA" | "CLIENT" | "UNKNOWN" {
+    if (component.startsWith("SAP_")) return "ABAP";
+    if (["ENGINEAPI", "EP-BASIS"].includes(component)) return "JAVA";
+    if (component.startsWith("BC-FES")) return "CLIENT";
+    return "UNKNOWN";
+}
+
+================
+File: src/middleware/correlationId.ts
+================
+import { Request, Response, NextFunction } from "express";
+import { randomUUID } from "crypto";
+
+export const correlationId = (req: Request, res: Response, next: NextFunction) => {
+    const id = req.headers["x-correlation-id"] || randomUUID();
+
+    req.headers["x-correlation-id"] = id;
+    res.setHeader("x-correlation-id", id);
+
+    next();
+};
+
+================
+File: src/middleware/errorHandler.ts
+================
+import { Request, Response, NextFunction } from "express";
+import APIError from "../utils/APIError";
+
+export const errorConverter = (err: any, req: Request, res: Response, next: NextFunction) => {
+    let error = err;
+
+    // Log the original error for debugging
+    console.error("[ERROR]", err.message, err.stack);
+
+    if (!(error instanceof APIError)) {
+        const statusCode = error.statusCode || 500;
+        const message = error.message || "Internal server error";
+        error = new APIError(statusCode, message, false);
+        error.stack = err.stack;
+    }
+
+    next(error);
+};
+
+export const errorHandler = (err: APIError, req: Request, res: Response, next: NextFunction) => {
+    const response: any = {
+        code: err.statusCode,
+        message: err.message,
+    };
+
+    if (process.env.NODE_ENV === "development") {
+        response.stack = err.stack;
+    }
+
+    res.status(err.statusCode).json(response);
+};
+
+================
+File: src/middleware/internalAuth.ts
+================
+import { Request, Response, NextFunction } from "express";
+
+export const internalAuth = (req: Request, res: Response, next: NextFunction) => {
+    const internalKey = req.headers["x-internal-key"];
+    const expectedKey = process.env.INTERNAL_SECRET;
+
+    // Allow healthcheck endpoints to bypass
+    if (req.path.includes("/health")) return next();
+
+    if (!internalKey || internalKey !== expectedKey) {
+        return res.status(401).json({ message: "Unauthorized internal request" });
+    }
+
+    next();
+};
+
+================
+File: src/middleware/rateLimit.ts
+================
+import rateLimit from "express-rate-limit";
+
+export default rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+================
+File: src/queues/note.queue.ts
+================
+import { Queue } from "bullmq";
+import { connection } from "../config/redis";
+
+export interface NoteJobPayload {
+    filePath: string;
+}
+
+export const noteQueue = new Queue<NoteJobPayload>(
+    "sap-note-queue",
+    { connection }
+);
+
+================
+File: src/routes/file.routes.ts
+================
+import { Router } from "express";
+import multer from "multer";
+import { uploadSapNote } from "../controllers/upload.controller";
+
+const router = Router();
+const upload = multer({ dest: "uploads/notes/" });
+
+router.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", service: "sap-note-service" });
+});
+
+router.post("/upload", upload.single("file"), uploadSapNote);
+
+export default router;
+
+================
+File: src/routes/health.routes.ts
+================
+import { Router } from "express"
+
+const router = Router()
+
+router.get("/", (req, res) => { res.json({ status: "ok" }) })
+
+export default router
+
+================
+File: src/utils/APIError.ts
+================
+export default class APIError extends Error {
+    statusCode: number;
+    isOperational: boolean;
+
+    constructor(statusCode: number, message: string, isOperational = true, stack = "") {
+        super(message);
+        this.statusCode = statusCode;
+        this.isOperational = isOperational;
+        if (stack) this.stack = stack;
+        else Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+================
+File: src/utils/logger.ts
+================
+import pino from "pino"
+import { env } from "../config/env"
+
+const logger = env.NODE_ENV === "production"
+    ? pino({
+        level: env.LOG_LEVEL,
+        formatters: {
+            level(label) {
+                return { level: label };
+            },
+        },
+    })
+    : pino({
+        level: env.LOG_LEVEL,
+        transport: {
+            target: 'pino-pretty',
+            options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+                ignore: 'pid,hostname',
+            },
+        },
+    });
+
+export { logger };
+
+================
+File: src/utils/noteExtractor.ts
+================
+import { extractSection } from "./sectionExtractor";
+
+export type ExtractedNote = {
+    noteNumber?: string;
+    title?: string;
+
+    components: {
+        name: string;
+        fromVersion?: string;
+        toVersion?: string;
+    }[];
+
+    supportPackages: {
+        component: string;
+        version: string;
+        supportPackage: string;
+    }[];
+
+    cves: string[];
+    cvssScore?: number;
+    cvssVector?: string;
+    priority?: string;
+    correction?: string;
+
+    confidence: number;
+};
+
+/* ===============================
+   INLINE COMPONENT EXTRACTION
+================================ */
+function extractInlineComponents(text: string) {
+    const results: ExtractedNote["components"] = [];
+
+    const regex =
+        /Component:\s*([A-Z0-9_-]+)[\s\S]{0,120}?(?:Version|Release):\s*([0-9.]+)/gi;
+
+    let match;
+
+    while ((match = regex.exec(text))) {
+        results.push({
+            name: match[1],
+            fromVersion: match[2],
+            toVersion: match[2],
+        });
+    }
+
+    return results;
+}
+
+/* ===============================
+   STRUCTURED TABLE EXTRACTION
+================================ */
+function extractStructuredComponents(text: string) {
+    const results: ExtractedNote["components"] = [];
+
+    const section = extractSection(
+        text,
+        /Software\s+Components?/i,
+        /Correction\s+Instructions?|Support\s+Package|Prerequisites/i
+    );
+
+    if (!section) return results;
+
+    const lineRegex =
+        /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/gm;
+
+    let match;
+
+    while ((match = lineRegex.exec(section))) {
+        results.push({
+            name: match[1],
+            fromVersion: match[2],
+            toVersion: match[3],
+        });
+    }
+
+    return results;
+}
+
+/* ===============================
+   SUPPORT PACKAGE EXTRACTION
+================================ */
+function extractSupportPackages(text: string) {
+    const results: ExtractedNote["supportPackages"] = [];
+
+    const section = extractSection(
+        text,
+        /Support\s+Package/i,
+        /References|This\s+document\s+refers/i
+    );
+
+    if (!section) return results;
+
+    const regex =
+        /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(SAPK-[A-Z0-9]+)/gm;
+
+    let match;
+
+    while ((match = regex.exec(section))) {
+        results.push({
+            component: match[1],
+            version: match[2],
+            supportPackage: match[3],
+        });
+    }
+
+    return results;
+}
+
+/* ===============================
+   MERGE COMPONENT RESULTS
+================================ */
+function mergeComponents(
+    ...arrays: ExtractedNote["components"][]
+): ExtractedNote["components"] {
+    const map = new Map<string, ExtractedNote["components"][number]>();
+
+    arrays.flat().forEach((c) => {
+        if (!map.has(c.name)) {
+            map.set(c.name, c);
+        }
+    });
+
+    return Array.from(map.values());
+}
+
+/* ===============================
+   MAIN EXTRACTOR
+================================ */
+export function extractSapNoteFields(text: string): ExtractedNote {
+    let confidence = 0;
+
+    const noteNumber =
+        text.match(/^(\d{6,7})\s*-/m)?.[1] ||
+        text.match(/SAP\s+Note\s+(\d{6,7})/i)?.[1];
+
+    if (noteNumber) confidence += 20;
+
+    const title =
+        text.match(/^\d{6,7}\s*-\s*(.+)/m)?.[1]?.trim();
+
+    if (title) confidence += 10;
+
+    const cves = new Set<string>();
+    for (const cve of text.matchAll(/CVE-\d{4}-\d{4,7}/g)) {
+        cves.add(cve[0]);
+    }
+    if (cves.size > 0) confidence += 10;
+
+    const cvssScoreStr =
+        text.match(/CVSS\s*Score\s*[:=]\s*([\d.]+)/i)?.[1];
+    const cvssVector =
+        text.match(/CVSS\s*Vector\s*[:=]\s*(CVSS:[^\s]+)/i)?.[1];
+
+    const cvssScore = cvssScoreStr
+        ? parseFloat(cvssScoreStr)
+        : undefined;
+
+    if (cvssScore) confidence += 10;
+
+    const priority =
+        text.match(/Priority\s*[:=]\s*(Hot\s*News|High|Medium|Low)/i)?.[1];
+
+    if (priority) confidence += 5;
+
+    const structured = extractStructuredComponents(text);
+    const inline = extractInlineComponents(text);
+    const components = mergeComponents(structured, inline);
+
+    if (components.length > 0) confidence += 25;
+
+    const supportPackages = extractSupportPackages(text);
+
+    const correction =
+        extractSection(
+            text,
+            /Correction\s+Instructions?/i,
+            /Support\s+Package|References/i
+        ) ?? undefined;
+
+    return {
+        noteNumber,
+        title,
+        components,
+        supportPackages,
+        cves: Array.from(cves),
+        cvssScore,
+        cvssVector,
+        priority,
+        correction,
+        confidence,
+    };
+}
+
+================
+File: src/utils/sectionExtractor.ts
+================
+export function extractSection(
+    text: string,
+    start: RegExp,
+    end?: RegExp
+): string | null {
+    const startMatch = text.search(start);
+    if (startMatch === -1) return null;
+
+    const sliced = text.slice(startMatch);
+    if (!end) return sliced;
+
+    const endMatch = sliced.search(end);
+    return endMatch === -1
+        ? sliced
+        : sliced.slice(0, endMatch);
+}
+
+================
+File: src/utils/textNormalizer.ts
+================
+export function normalizePdfText(raw: string): string {
+    return raw
+        .replace(/\r/g, "")
+        .replace(/[ \t]+/g, " ")
+        .replace(/([a-z])\n([a-z])/gi, "$1 $2")
+        .replace(/\n{2,}/g, "\n\n")
+        .replace(/Component\s*:/gi, "Component:")
+        .replace(/Version\s*:/gi, "Version:")
+        .replace(/Release\s*:/gi, "Release:")
+        .trim();
+}
+
+================
+File: src/workers/note.worker.ts
+================
+import { Worker } from "bullmq";
+import fs from "fs";
+import { PDFParse } from "pdf-parse";
+import prisma from "../config/db";
+import { connection } from "../config/redis";
+import { normalizePdfText } from "../utils/textNormalizer";
+import { extractSapNoteFields } from "../utils/noteExtractor";
+import { logger } from "../utils/logger";
+
+interface NoteJob {
+    filePath: string;
+}
+
+export const noteWorker = new Worker<NoteJob>(
+    "sap-note-queue",
+    async (job) => {
+        const { filePath } = job.data;
+
+        logger.info(`[SAP-NOTE] Parsing PDF: ${filePath}`);
+
+        try {
+            if (!fs.existsSync(filePath)) {
+                throw new Error("PDF file not found on disk");
+            }
+
+            // 1️⃣ Read PDF
+            const buffer = fs.readFileSync(filePath);
+            const parser = new PDFParse({ data: buffer });
+            const parsed = await parser.getText();
+            await parser.destroy();
+
+            // 2️⃣ Normalize text (CRITICAL)
+            const normalizedText = normalizePdfText(parsed.text);
+
+            // 3️⃣ Extract structured fields
+            const extracted = extractSapNoteFields(normalizedText);
+
+
+            // 4️⃣ Confidence gate
+            logger.info(
+                `[SAP-NOTE] confidence=${extracted.confidence} note=${extracted.noteNumber ?? "unknown"}`
+            );
+
+            // Debug log before DB write
+            logger.info({
+                note: extracted.noteNumber,
+                components: extracted.components,
+                confidence: extracted.confidence,
+            });
+
+            if (!extracted.noteNumber || extracted.components.length === 0) {
+                throw new Error(
+                    `Low confidence extraction (${extracted.confidence})`
+                );
+            }
+
+
+            // 5️⃣ Store SAP Note (upsert)
+            const note = await prisma.sapNote.upsert({
+                where: { noteNumber: extracted.noteNumber },
+                update: {
+                    title: extracted.title,
+                    priority: extracted.priority,
+                    cvssScore: extracted.cvssScore,
+                    cvssVector: extracted.cvssVector,
+                    confidence: extracted.confidence,
+                    correction: extracted.correction,
+                    rawText: normalizedText,
+                },
+                create: {
+                    title: extracted.title,
+                    noteNumber: extracted.noteNumber,
+                    priority: extracted.priority,
+                    cvssScore: extracted.cvssScore,
+                    cvssVector: extracted.cvssVector,
+                    confidence: extracted.confidence,
+                    correction: extracted.correction,
+                    rawText: normalizedText,
+                },
+            });
+
+            // 6️⃣ Store affected components (normalized)
+            for (const component of extracted.components) {
+                await prisma.sapNoteComponent.upsert({
+                    where: {
+                        noteId_component: {
+                            noteId: note.id,
+                            component: component.name,
+                        },
+                    },
+                    update: {
+                        fromVersion: component.fromVersion ?? component.toVersion,
+                        toVersion: component.toVersion ?? component.fromVersion,
+                    },
+                    create: {
+                        noteId: note.id,
+                        component: component.name,
+                        fromVersion: component.fromVersion ?? component.toVersion,
+                        toVersion: component.toVersion ?? component.fromVersion,
+                    },
+                });
+            }
+
+            logger.info(
+                `[SAP-NOTE] Parsed SAP Note ${extracted.noteNumber} successfully`
+            );
+        } catch (err: any) {
+            logger.error(`[SAP-NOTE] Failed to parse PDF: ${err.message}`);
+            throw err;
+        } finally {
+            // 7️⃣ Cleanup
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+    },
+    {
+        connection,
+        concurrency: 1,
+    }
+);
+
+================
+File: src/app.ts
+================
+import express from "express"
+import cors from 'cors'
+import helmet from "helmet"
+import PinoHttp from "pino-http"
+import rateLimit from "./middleware/rateLimit"
+import { correlationId } from "./middleware/correlationId"
+import { internalAuth } from "./middleware/internalAuth";
+import { errorConverter, errorHandler } from "./middleware/errorHandler";
+import healthRoutes from "./routes/health.routes"
+import fileRoutes from "./routes/file.routes";
+
+const app = express()
+
+app.use(helmet())
+app.use(cors({ origin: "*", credentials: true }))
+// Skip body parsing for file upload routes (multipart/form-data)
+app.use((req, res, next) => {
+    const contentType = req.headers['content-type'] || '';
+    if (contentType.includes('multipart/form-data')) {
+        return next();
+    }
+    express.json({ limit: '10mb' })(req, res, next);
+});
+app.use((req, res, next) => {
+    const contentType = req.headers['content-type'] || '';
+    if (contentType.includes('multipart/form-data')) {
+        return next();
+    }
+    express.urlencoded({ extended: true })(req, res, next);
+});
+app.use(correlationId);
+app.use(PinoHttp())
+app.use(rateLimit)
+
+app.use(internalAuth);
+
+app.use("/health", healthRoutes)
+app.use("/notes", fileRoutes);
+
+
+app.use(errorConverter);
+app.use(errorHandler);
+export default app
+
+================
+File: src/server.ts
+================
+import dotenv from "dotenv"
+dotenv.config()
+
+import app from "./app"
+import { logger } from "./utils/logger"
+import "./workers/note.worker";
+import fs from "fs";
+
+const uploadDir = "uploads/notes";
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+
+import { env } from "./config/env";
+const PORT = env.PORT;
+
+const server = app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT} as ${process.env.NODE_ENV}`);
+});
+
+const gracefulShutdown = () => {
+    logger.info('Received kill signal, shutting down gracefully');
+    server.close(() => {
+        logger.info('Closed out remaining connections');
+        process.exit(0);
+    });
+
+    // Force close if it takes too long (e.g., 10 seconds)
+    setTimeout(() => {
+        logger.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+};
+
+// Listen for termination signals
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+================
+File: .env.example
+================
+# Environment variables declared in this file are NOT automatically loaded by Prisma.
+# Please add `import "dotenv/config";` to your `prisma.config.ts` file, or use the Prisma CLI with Bun
+# to load environment variables from .env files: https://pris.ly/prisma-config-env-vars.
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+# The following `prisma+postgres` URL is similar to the URL produced by running a local Prisma Postgres
+# server with the `prisma dev` CLI command, when not choosing any non-default ports or settings. The API key, unlike the
+# one found in a remote Prisma Postgres URL, does not contain any sensitive information.
+
+DATABASE_URL="postgresql://postgres:root@localhost:5432/sap_note_service?schema=public"
+JWT_SECRET="your_jwt_secret_key"
+REDIS_URL="redis://localhost:6379"
+NODE_ENV="development"
+PORT="8083"
+
+================
+File: .gitignore
 ================
 node_modules
 # Keep environment variables out of version control
@@ -366,7 +1443,51 @@ node_modules
 /src/generated/prisma
 
 ================
-File: apps/user-service/prisma.config.ts
+File: package.json
+================
+{
+  "name": "sap-note-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "bullmq": "^5.66.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.8.2",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0",
+    "ts-node": "^10.9.2",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.15.3",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/pg": "^8.16.0",
+    "dotenv": "^16.6.1",
+    "nodemon": "^3.1.11",
+    "prisma": "^7.2.0"
+  }
+}
+
+================
+File: prisma.config.ts
 ================
 // This file was generated by Prisma, and assumes you have installed the following:
 // npm install --save-dev prisma dotenv
@@ -382,6 +1503,37 @@ export default defineConfig({
     url: process.env["DATABASE_URL"],
   },
 });
+
+================
+File: tsconfig.json
+================
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./build",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*",
+        "prisma.config.ts",
+        "prisma/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "tests"
+    ]
+}
+
+
+
+
+
+================================================================
+End of Codebase
+================================================================
 
 ================
 File: apps/clien-file-service/prisma/migrations/20251230234115_init/migration.sql
@@ -1926,6 +3078,27 @@ export default rateLimit({
 });
 
 ================
+File: apps/sap-core-service/src/queues/match.queue.ts
+================
+import { Queue } from "bullmq";
+import IORedis from "ioredis";
+import { env } from "../config/env";
+
+const connection = new IORedis(env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+});
+
+export const noteMatchQueue = new Queue(
+    "sap-note-match-queue",
+    { connection }
+);
+
+export const systemMatchQueue = new Queue(
+    "sap-system-match-queue",
+    { connection }
+);
+
+================
 File: apps/sap-core-service/src/routes/health.routes.ts
 ================
 import { Router } from "express"
@@ -1951,6 +3124,116 @@ router.get("/systems/:sid/vulnerabilities", getSystemVulnerabilities);
 router.get("/vulnerabilities/summary", vulnerabilitySummary);
 
 export default router;
+
+================
+File: apps/sap-core-service/src/services/incrementalMatcher.service.ts
+================
+import prisma from "../config/db";
+import { isVersionInRange } from "../utils/versionMatcher";
+
+function extractSPNumber(sp?: string) {
+    if (!sp) return null;
+    const match = sp.match(/SAPK-\d+(\d+)/);
+    return match ? Number(match[1]) : null;
+}
+
+export async function matchNoteAgainstSystems(noteId: string) {
+    const note = await prisma.sapNote.findUnique({
+        where: { id: noteId },
+        include: { components: true },
+    });
+
+    if (!note) return;
+
+    const systems = await prisma.system.findMany({
+        include: { abapComponents: true },
+    });
+
+    for (const system of systems) {
+        await matchNoteWithSystem(note, system);
+    }
+}
+
+export async function matchSystemAgainstNotes(systemSid: string) {
+    const system = await prisma.system.findUnique({
+        where: { sid: systemSid },
+        include: { abapComponents: true },
+    });
+
+    if (!system) return;
+
+    const notes = await prisma.sapNote.findMany({
+        include: { components: true },
+    });
+
+    for (const note of notes) {
+        await matchNoteWithSystem(note, system);
+    }
+}
+
+async function matchNoteWithSystem(note: any, system: any) {
+    for (const comp of system.abapComponents) {
+        for (const noteComp of note.components) {
+
+            if (noteComp.component !== comp.component) continue;
+
+            let vulnerable = false;
+
+            // RANGE MATCH
+            if (
+                noteComp.fromVersion &&
+                noteComp.toVersion &&
+                isVersionInRange(
+                    comp.release,
+                    noteComp.fromVersion,
+                    noteComp.toVersion
+                )
+            ) {
+                vulnerable = true;
+            }
+
+            // SINGLE VERSION MATCH
+            if (
+                !vulnerable &&
+                noteComp.fromVersion &&
+                !noteComp.toVersion &&
+                comp.release === noteComp.fromVersion
+            ) {
+                vulnerable = true;
+            }
+
+            // SUPPORT PACKAGE MATCH
+            if (!vulnerable && noteComp.fixedInSp && comp.supportPackage) {
+                const fixSP = extractSPNumber(noteComp.fixedInSp);
+                const installedSP = extractSPNumber(comp.supportPackage);
+
+                if (
+                    fixSP !== null &&
+                    installedSP !== null &&
+                    installedSP < fixSP
+                ) {
+                    vulnerable = true;
+                }
+            }
+
+            if (!vulnerable) continue;
+
+            try {
+                await prisma.sapVulnerability.create({
+                    data: {
+                        systemId: system.sid,
+                        componentName: comp.component,
+                        componentVersion: comp.release,
+                        noteId: note.id,
+                        noteNumber: note.noteNumber,
+                        fromVersion: noteComp.fromVersion,
+                        toVersion: noteComp.toVersion,
+                    },
+                });
+            } catch { }
+        }
+    }
+}
 
 ================
 File: apps/sap-core-service/src/utils/APIError.ts
@@ -2030,6 +3313,46 @@ function compare(a: number[], b: number[]) {
     }
     return 0;
 }
+
+================
+File: apps/sap-core-service/src/workers/noteMatch.worker.ts
+================
+import { Worker } from "bullmq";
+import IORedis from "ioredis";
+import { env } from "../config/env";
+import { matchNoteAgainstSystems } from "../services/incrementalMatcher.service";
+
+const connection = new IORedis(env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+});
+
+new Worker(
+    "sap-note-match-queue",
+    async (job) => {
+        await matchNoteAgainstSystems(job.data.noteId);
+    },
+    { connection }
+);
+
+================
+File: apps/sap-core-service/src/workers/systemMatch.worker.ts
+================
+import { Worker } from "bullmq";
+import IORedis from "ioredis";
+import { env } from "../config/env";
+import { matchSystemAgainstNotes } from "../services/incrementalMatcher.service";
+
+const connection = new IORedis(env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+});
+
+new Worker(
+    "sap-system-match-queue",
+    async (job) => {
+        await matchSystemAgainstNotes(job.data.systemSid);
+    },
+    { connection }
+);
 
 ================
 File: apps/sap-core-service/.env.example
@@ -2325,21 +3648,6 @@ export function extractSection(
 }
 
 ================
-File: apps/sap-note-service/src/utils/textNormalizer.ts
-================
-export function normalizePdfText(raw: string): string {
-    return raw
-        // remove excessive whitespace
-        .replace(/\r/g, "")
-        .replace(/[ \t]+/g, " ")
-        // fix broken line sentences
-        .replace(/([a-z])\n([a-z])/gi, "$1 $2")
-        // normalize line breaks
-        .replace(/\n{2,}/g, "\n\n")
-        .trim();
-}
-
-================
 File: apps/sap-note-service/.env.example
 ================
 # Environment variables declared in this file are NOT automatically loaded by Prisma.
@@ -2410,91 +3718,76 @@ File: apps/sap-note-service/tsconfig.json
 }
 
 ================
-File: apps/user-service/src/database/models/UserModel.ts
+File: apps/user-service/prisma/migrations/20260128223949_init_user/migration.sql
 ================
-import mongoose, { Schema, Document } from "mongoose";
-import validator from "validator";
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "isVerified" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-export interface IUser extends Document {
-    name: string;
-    email: string;
-    password: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-const UserSchema: Schema = new Schema(
-    {
-        name: {
-            type: String,
-            trim: true,
-            required: [true, "Name must be provided"],
-            minlength: 3,
-        },
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-            validate: [validator.isEmail, "Please provide a valid email."],
-        },
-        password: {
-            type: String,
-            trim: false,
-            required: [true, "Password must be provided"],
-            minlength: 8,
-        },
-    },
-    {
-        timestamps: true,
-    }
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
-const User = mongoose.model<IUser>("User", UserSchema);
-export default User;
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 ================
-File: apps/user-service/src/database/connection.ts
+File: apps/user-service/prisma/migrations/migration_lock.toml
 ================
-import mongoose from "mongoose"
-import config from "../config/config"
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "postgresql"
 
-export const connectDB = async (): Promise<void> => {
-    if (!config.MONGO_URI) {
-        throw new Error("Missing MONGO_URI. Set it in apps/user-service/.env (or process.env).")
-    }
+================
+File: apps/user-service/prisma/schema.prisma
+================
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-    const maxAttempts = 30;
-    const delayMs = 1000;
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-            console.info(`Connecting to database (${attempt}/${maxAttempts})... ${config.MONGO_URI}`)
-            await mongoose.connect(config.MONGO_URI)
-            console.info("Database connected successfully")
-            return
-        } catch (error) {
-            const isLastAttempt = attempt === maxAttempts
-            console.error(
-                isLastAttempt
-                    ? "Database connection failed (giving up)"
-                    : "Database connection failed (will retry)",
-                error
-            )
-            if (isLastAttempt) throw error
-            await new Promise((resolve) => setTimeout(resolve, delayMs))
-        }
-    }
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String  @id @default(uuid())
+  email      String  @unique
+  password   String
+  isVerified Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 ================
-File: apps/user-service/src/database/index.ts
+File: apps/user-service/src/database/prisma.ts
 ================
-import User, { IUser } from "./models/UserModel";
-import { connectDB } from "./connection";
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import config from "../config/config";
 
-export { User, IUser, connectDB };
+// Create pg pool
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
+
+// Create Prisma adapter
+const adapter = new PrismaPg(pool);
+
+// Create Prisma client (OPTIONS REQUIRED)
+export const prisma = new PrismaClient({ adapter });
 
 ================
 File: apps/user-service/src/utils/index.ts
@@ -2557,56 +3850,6 @@ export const loginSchema = z.object({
 });
 
 ================
-File: apps/user-service/src/server.ts
-================
-import express, { Express } from "express"
-import { Server } from "http"
-import { errorConverter, errorHandler } from "./middleware"
-import { connectDB } from "./database"
-import config from "./config/config"
-import { rabbitMQService } from "./services/rabbitmq.service"
-import userRouter from "./routes/authRoutes";
-const app: Express = express()
-
-let server: Server
-
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(userRouter)
-app.use(errorConverter)
-app.use(errorHandler)
-
-connectDB()
-    .then(() => {
-        server = app.listen(config.PORT, () => {
-            console.log(`Server is running on port ${config.PORT}`)
-        })
-
-        rabbitMQService
-            .init()
-            .then(() => {
-                console.log("Connected to RabbitMQ successfully")
-            })
-            .catch((error: Error) => {
-                console.error("Failed to connect to RabbitMQ:", error)
-            })
-    })
-    .catch((error: Error) => {
-        console.error("Database connection failed:", error)
-    })
-
-process.on("unhandledRejection", (reason, promise) => {
-    console.error("Unhandled Rejection at:", promise, "reason:", reason)
-    if (server) {
-        server.close(() => {
-            process.exit(1)
-        })
-    } else {
-        process.exit(1)
-    }
-})
-
-================
 File: apps/user-service/.env.example
 ================
 NODE_ENV="development"
@@ -2614,6 +3857,33 @@ PORT=8081
 JWT_SECRET="secret"
 MESSAGE_BROKER_URL="amqp://localhost:5672"
 MONGO_URI="mongodb://localhost:27017/user-service"
+
+================
+File: apps/user-service/.gitignore
+================
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+================
+File: apps/user-service/prisma.config.ts
+================
+// This file was generated by Prisma, and assumes you have installed the following:
+// npm install --save-dev prisma dotenv
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: process.env["DATABASE_URL"],
+  },
+});
 
 ================
 File: apps/user-service/tsconfig.json
@@ -3862,145 +5132,6 @@ packages:
   - "packages/*"
 
 ================
-File: README.md
-================
-# Turborepo starter
-
-This Turborepo starter is maintained by the Turborepo core team.
-
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
-
-================
 File: turbo.json
 ================
 {
@@ -4254,55 +5385,6 @@ export async function listSystems(req: Request, res: Response) {
 }
 
 ================
-File: apps/sap-core-service/src/services/matcher.service.ts
-================
-import prisma from "../config/db";
-
-export async function runVulnerabilityScan() {
-    // We use a raw SQL query to join tables directly in the database.
-    // This runs in milliseconds instead of minutes.
-    const matches = await prisma.$queryRaw`
-        INSERT INTO "SapVulnerability" (
-            "id",
-            "systemId",
-            "componentName",
-            "componentVersion",
-            "noteId",
-            "noteNumber",
-            "fromVersion",
-            "toVersion",
-            "detectedAt"
-        )
-        SELECT
-            gen_random_uuid(),      -- Generate new ID
-            s."sid",                -- System ID
-            ac."component",         -- Component Name
-            ac."release",           -- Installed Version
-            sn."id",                -- Note ID
-            sn."noteNumber",        -- Note Number
-            snc."fromVersion",      -- Vulnerable From
-            snc."toVersion",        -- Vulnerable To
-            NOW()                   -- Current Time
-        FROM "AbapComponent" ac
-        -- Join System to ensure it exists
-        JOIN "System" s ON ac."systemSid" = s."sid"
-        -- Join Note Components where names match
-        JOIN "SapNoteComponent" snc ON ac."component" = snc."component"
-        -- Join Note Details
-        JOIN "SapNote" sn ON snc."noteId" = sn."id"
-        -- THE MATCHING LOGIC: Check if version is within range
-        WHERE
-            ac."release" >= snc."fromVersion"
-            AND ac."release" <= snc."toVersion"
-        -- Avoid duplicates
-        ON CONFLICT ("systemId", "componentName", "noteId") DO NOTHING;
-    `;
-
-    // Return a simple count (Prisma raw query result usually includes row count)
-    return { status: "scanned", message: "Vulnerability scan completed via DB" };
-}
-
-================
 File: apps/sap-core-service/src/server.ts
 ================
 import dotenv from "dotenv"
@@ -4434,6 +5516,21 @@ export const errorHandler = (err: APIError, req: Request, res: Response, next: N
 };
 
 ================
+File: apps/sap-note-service/src/utils/textNormalizer.ts
+================
+export function normalizePdfText(raw: string): string {
+    return raw
+        .replace(/\r/g, "")
+        .replace(/[ \t]+/g, " ")
+        .replace(/([a-z])\n([a-z])/gi, "$1 $2")
+        .replace(/\n{2,}/g, "\n\n")
+        .replace(/Component\s*:/gi, "Component:")
+        .replace(/Version\s*:/gi, "Version:")
+        .replace(/Release\s*:/gi, "Release:")
+        .trim();
+}
+
+================
 File: apps/user-service/src/config/config.ts
 ================
 import path from "path";
@@ -4456,65 +5553,11 @@ export default {
 };
 
 ================
-File: apps/user-service/src/controllers/AuthController.ts
+File: apps/user-service/src/database/index.ts
 ================
-import { Request, Response } from "express";
-import type { CookieOptions } from "express";
-import jwt from "jsonwebtoken";
-import { User } from "../database";
-import { encryptPassword, isPasswordMatch } from "../utils";
-import config from "../config/config";
+import { prisma } from "./prisma";
 
-const cookieOptions: CookieOptions = {
-    httpOnly: true,
-    secure: config.env === "production",
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-};
-
-const signToken = (payload: any) =>
-    jwt.sign(payload, config.JWT_SECRET!, { expiresIn: "1d" });
-
-export default {
-    async register(req: Request, res: Response) {
-        const { name, email, password } = req.body;
-
-        const exists = await User.findOne({ email });
-        if (exists) return res.status(400).json({ message: "User already exists" });
-
-        const hashed = await encryptPassword(password);
-
-        const user = await User.create({
-            name,
-            email,
-            password: hashed,
-        });
-
-        return res.json({
-            message: "User registered",
-            data: { id: user._id, name: user.name, email: user.email },
-        });
-    },
-
-    async login(req: Request, res: Response) {
-        const { email, password } = req.body;
-
-        const user = await User.findOne({ email }).select("+password");
-        if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
-        const match = await isPasswordMatch(password, user.password);
-        if (!match) return res.status(400).json({ message: "Invalid credentials" });
-
-        const token = signToken({ id: user._id, email: user.email });
-
-        res.cookie("jwt", token, cookieOptions);
-
-        return res.json({
-            message: "Login successful",
-            token,
-        });
-    },
-};
+export { prisma };
 
 ================
 File: apps/user-service/src/middleware/validate.ts
@@ -4548,166 +5591,50 @@ export default (schema: z.ZodTypeAny) => (
 };
 
 ================
-File: apps/user-service/src/services/rabbitmq.service.ts
+File: apps/user-service/src/server.ts
 ================
-import { Channel, ChannelModel, connect } from "amqplib";
-import config from "../config/config";
-import { User } from "../database";
-import { ApiError } from "../utils";
+import express, { Express } from "express"
+import { Server } from "http"
+import { errorConverter, errorHandler } from "./middleware"
 
-class RabbitMQService {
-    private requestQueue = "USER_DETAILS_REQUEST";
-    private responseQueue = "USER_DETAILS_RESPONSE";
-    private connection?: ChannelModel;
-    private channel?: Channel;
-    private initializing?: Promise<void>;
-    private consumerStarted = false;
+import config from "./config/config"
+import { rabbitMQService } from "./services/rabbitmq.service"
+import userRouter from "./routes/authRoutes";
+const app: Express = express()
 
-    constructor() {
-        // Intentionally do not auto-connect here.
-        // Auto-connecting from a constructor creates an unhandled Promise rejection
-        // when RabbitMQ isn't ready yet (common in Docker Compose startup).
+let server: Server
+
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(userRouter)
+app.use(errorConverter)
+app.use(errorHandler)
+
+
+server = app.listen(config.PORT, () => {
+    console.log(`Server is running on port ${config.PORT}`)
+})
+
+rabbitMQService
+    .init()
+    .then(() => {
+        console.log("Connected to RabbitMQ successfully")
+    })
+    .catch((error: Error) => {
+        console.error("Failed to connect to RabbitMQ:", error)
+    })
+
+
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection at:", promise, "reason:", reason)
+    if (server) {
+        server.close(() => {
+            process.exit(1)
+        })
+    } else {
+        process.exit(1)
     }
-
-    async init(): Promise<void> {
-        if (!config.msgBrokerURL) {
-            throw new Error(
-                "Missing MESSAGE_BROKER_URL. Set it in apps/user-service/.env (or process.env)."
-            );
-        }
-        const msgBrokerURL = config.msgBrokerURL;
-
-        if (this.channel) return;
-        if (this.initializing) return this.initializing;
-
-        this.initializing = (async () => {
-            const maxAttempts = 30;
-            const delayMs = 1000;
-
-            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                try {
-                    this.consumerStarted = false;
-
-                    this.connection = await connect(msgBrokerURL);
-                    this.connection.on("close", () => {
-                        this.connection = undefined;
-                        this.channel = undefined;
-                        this.initializing = undefined;
-                        this.consumerStarted = false;
-                        void this.init().catch(() => undefined);
-                    });
-                    this.connection.on("error", () => {
-                        // Connection errors are handled by 'close' in most cases.
-                        // Avoid throwing here to prevent crashing the process.
-                    });
-
-                    this.channel = await this.connection.createChannel();
-                    this.channel.on("close", () => {
-                        this.channel = undefined;
-                        this.initializing = undefined;
-                        this.consumerStarted = false;
-                        void this.init().catch(() => undefined);
-                    });
-                    this.channel.on("error", () => {
-                        // Same rationale as connection error handler.
-                    });
-
-                    await this.channel.assertQueue(this.requestQueue);
-                    await this.channel.assertQueue(this.responseQueue);
-
-                    this.listenForRequests();
-                    return;
-                } catch (err) {
-                    if (attempt === maxAttempts) throw err;
-                    await new Promise((resolve) => setTimeout(resolve, delayMs));
-                }
-            }
-        })();
-
-        try {
-            await this.initializing;
-        } finally {
-            this.initializing = undefined;
-        }
-    }
-
-    private async listenForRequests() {
-        if (!this.channel) return;
-        if (this.consumerStarted) return;
-        this.consumerStarted = true;
-
-        this.channel.consume(this.requestQueue, async (msg) => {
-            if (msg && msg.content) {
-                const { userId } = JSON.parse(msg.content.toString());
-                const userDetails = await getUserDetails(userId);
-
-                // Send the user details response
-                this.channel?.sendToQueue(
-                    this.responseQueue,
-                    Buffer.from(JSON.stringify(userDetails)),
-                    { correlationId: msg.properties.correlationId }
-                );
-
-                // Acknowledge the processed message
-                this.channel?.ack(msg);
-            }
-        });
-    }
-}
-
-const getUserDetails = async (userId: string) => {
-    const userDetails = await User.findById(userId).select("-password");
-    if (!userDetails) {
-        throw new ApiError(404, "User not found");
-    }
-
-    return userDetails;
-};
-export const rabbitMQService = new RabbitMQService();
-
-================
-File: apps/user-service/package.json
-================
-{
-  "name": "user-service",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "NODE_ENV=development nodemon src/server.ts",
-    "build": "rm -rf build/ && tsc -p .",
-    "start": "NODE_ENV=production nodemon build/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@prisma/client": "^7.3.0",
-    "@types/express": "^4.17.21",
-    "@types/validator": "^13.11.8",
-    "amqplib": "^0.10.3",
-    "bcryptjs": "^2.4.3",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.4",
-    "nodemon": "^3.0.2",
-    "pino": "^10.1.0",
-    "pino-pretty": "^13.1.3",
-    "prisma": "^7.3.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "validator": "^13.11.0",
-    "zod": "^4.2.1"
-  },
-  "devDependencies": {
-    "@types/amqplib": "^0.10.4",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.5",
-    "@types/pino": "^7.0.5"
-  }
-}
+})
 
 ================
 File: .gitignore
@@ -4776,6 +5703,228 @@ File: package.json
     "node": ">=18"
   }
 }
+
+================
+File: README.md
+================
+# Microservices Monorepo Overview
+
+This repository contains several microservices, each responsible for a specific domain in the system. Below is a summary of each service and its purpose, along with basic setup instructions.
+
+---
+
+## Services
+
+### 1. user-service
+
+Handles user registration, authentication, and user data management.
+
+- **Port:** 8081
+- **Tech:** Node.js, Express, Prisma, MongoDB, RabbitMQ
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `MESSAGE_BROKER_URL`, `MONGO_URI`, etc.
+
+### 2. clien-file-service
+
+Manages file uploads, downloads, and storage.
+
+- **Port:** 8082
+- **Tech:** Node.js, Express, Prisma, PostgreSQL, Redis
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, `INTERNAL_SECRET`, etc.
+
+### 3. sap-note-service
+
+Processes and stores SAP notes, including PDF parsing and extraction.
+
+- **Port:** 8083
+- **Tech:** Node.js, Express, Prisma, PostgreSQL, Redis
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, etc.
+
+### 4. sap-core-service
+
+Handles core SAP system data and operations.
+
+- **Port:** 8084
+- **Tech:** Node.js, Express, Prisma, PostgreSQL, Redis
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, etc.
+
+### 5. gateway
+
+API gateway that routes requests to the appropriate microservice and handles authentication.
+
+- **Port:** 8080
+- **Tech:** Node.js, Express
+- **.env:**
+  - `PORT`, `JWT_SECRET`, `INTERNAL_SECRET`, service URLs, etc.
+
+### 6. web
+
+Frontend application (Next.js) for user interaction.
+
+- **Port:** 3000
+- **Tech:** Next.js, React
+
+### 7. docs
+
+Documentation site (Next.js) for the project.
+
+- **Port:** 3001
+- **Tech:** Next.js
+
+---
+
+## Common Setup
+
+1. **Install dependencies:**
+   ```sh
+   pnpm install
+   ```
+2. **Set up environment variables:**
+   - Copy `.env.example` to `.env` in each service directory and update values as needed.
+3. **Run all services:**
+   ```sh
+   pnpm run dev
+   ```
+4. **Database migrations:**
+   - For services using Prisma, run:
+     ```sh
+     pnpm prisma migrate dev --name init
+     ```
+     in the respective service directory.
+
+---
+
+## Notes
+
+- Each service has its own README and .env.example for more details.
+- Use Docker Compose for local development if available.
+- Ensure all required databases and message brokers are running.
+
+---
+
+For more details, see the README in each service folder.
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
+turbo build
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
+npx turbo build
+yarn dlx turbo build
+pnpm exec turbo build
+
+```
+
+You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+
+```
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
+turbo build --filter=docs
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
+npx turbo build --filter=docs
+yarn exec turbo build --filter=docs
+pnpm exec turbo build --filter=docs
+
+```
+
+### Develop
+
+To develop all apps and packages, run the following command:
+
+```
+
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
+turbo dev
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
+npx turbo dev
+yarn exec turbo dev
+pnpm exec turbo dev
+
+```
+
+You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+
+```
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
+turbo dev --filter=web
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
+npx turbo dev --filter=web
+yarn exec turbo dev --filter=web
+pnpm exec turbo dev --filter=web
+
+```
+
+### Remote Caching
+
+> [!TIP]
+> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+
+Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+
+By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+
+```
+
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
+turbo login
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
+npx turbo login
+yarn exec turbo login
+pnpm exec turbo login
+
+```
+
+This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+
+Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+
+```
+
+# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+
+turbo link
+
+# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
+
+npx turbo link
+yarn exec turbo link
+pnpm exec turbo link
+
+```
+
+## Useful Links
+
+Learn more about the power of Turborepo:
+
+- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
+- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
+- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
+- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
+- [Configuration Options](https://turborepo.com/docs/reference/configuration)
+- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+```
 
 ================
 File: apps/clien-file-service/src/server.ts
@@ -4850,6 +5999,148 @@ File: apps/gateway/package.json
 }
 
 ================
+File: apps/sap-core-service/src/services/matcher.service.ts
+================
+import prisma from "../config/db";
+import { isVersionInRange } from "../utils/versionMatcher";
+
+/**
+ * Extract numeric SP value from SAPK string
+ * Example:
+ * SAPK-75015INSAPBASIS → 15
+ */
+function extractSPNumber(sp?: string | null): number | null {
+    if (!sp) return null;
+
+    const match = sp.match(/SAPK-\d+(\d+)/);
+    if (!match) return null;
+
+    return Number(match[1]);
+}
+
+/**
+ * Core vulnerability decision logic
+ */
+function isComponentVulnerable(
+    installedRelease: string,
+    installedSP?: string | null,
+    noteFrom?: string | null,
+    noteTo?: string | null,
+    noteFixSP?: string | null
+): boolean {
+
+    /* =========================
+       LEVEL 1 — RANGE MATCH
+    ========================= */
+    if (noteFrom && noteTo) {
+        if (isVersionInRange(installedRelease, noteFrom, noteTo)) {
+            return true;
+        }
+    }
+
+    /* =========================
+       LEVEL 2 — SINGLE VERSION
+    ========================= */
+    if (noteFrom && !noteTo) {
+        if (installedRelease === noteFrom) {
+            return true;
+        }
+    }
+
+    /* =========================
+       LEVEL 3 — SUPPORT PACKAGE
+    ========================= */
+    if (noteFixSP && installedSP) {
+        const fixSP = extractSPNumber(noteFixSP);
+        const installedSPNum = extractSPNumber(installedSP);
+
+        if (
+            fixSP !== null &&
+            installedSPNum !== null &&
+            installedSPNum < fixSP
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * FULL SYSTEM SCAN
+ * (Fallback / manual trigger / safety net)
+ */
+export async function runVulnerabilityScan() {
+
+    const systems = await prisma.system.findMany({
+        include: {
+            abapComponents: true,
+        },
+    });
+
+    const notes = await prisma.sapNote.findMany({
+        include: {
+            components: true,
+        },
+    });
+
+    let matches = 0;
+
+    for (const system of systems) {
+        for (const comp of system.abapComponents) {
+
+            for (const note of notes) {
+                for (const noteComp of note.components) {
+
+                    /* COMPONENT NAME MUST MATCH */
+                    if (noteComp.component !== comp.component) continue;
+
+                    const vulnerable = isComponentVulnerable(
+                        comp.release,
+                        comp.supportPackage,
+                        noteComp.fromVersion,
+                        noteComp.toVersion,
+                        noteComp.fixedInSp
+                    );
+
+                    if (!vulnerable) continue;
+
+                    try {
+                        await prisma.sapVulnerability.create({
+                            data: {
+                                systemId: system.sid,
+                                componentName: comp.component,
+                                componentVersion: comp.release,
+                                noteId: note.id,
+                                noteNumber: note.noteNumber,
+                                fromVersion: noteComp.fromVersion,
+                                toVersion: noteComp.toVersion,
+                            },
+                        });
+
+                        matches++;
+
+                    } catch (err) {
+                        /**
+                         * Ignore duplicates safely
+                         * Unique constraint:
+                         * systemId + componentName + noteId
+                         */
+                    }
+                }
+            }
+        }
+    }
+
+    return {
+        status: "completed",
+        matches,
+        systemsScanned: systems.length,
+        notesEvaluated: notes.length,
+    };
+}
+
+================
 File: apps/sap-core-service/src/app.ts
 ================
 import express from "express"
@@ -4887,44 +6178,6 @@ app.use(errorHandler);
 export default app
 
 ================
-File: apps/sap-core-service/package.json
-================
-{
-  "name": "sap-core-service",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
-  "scripts": {
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@prisma/adapter-pg": "^7.2.0",
-    "@types/pg": "^8.16.0",
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "express-rate-limit": "^8.2.1",
-    "helmet": "^8.1.0",
-    "pg": "^8.16.3",
-    "pino": "^10.1.0",
-    "pino-http": "^11.0.0",
-    "ts-node": "^10.9.2",
-    "zod": "^4.2.1"
-  },
-  "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.15.3",
-    "dotenv": "^17.2.3",
-    "nodemon": "^3.1.11",
-    "prisma": "^7.2.0"
-  }
-}
-
-================
 File: apps/sap-note-service/src/routes/file.routes.ts
 ================
 import { Router } from "express";
@@ -4941,177 +6194,6 @@ router.get("/health", (req, res) => {
 router.post("/upload", upload.single("file"), uploadSapNote);
 
 export default router;
-
-================
-File: apps/sap-note-service/src/utils/noteExtractor.ts
-================
-import { extractSection } from "./sectionExtractor";
-
-export type ExtractedNote = {
-    noteNumber?: string;
-    title?: string;
-
-    components: {
-        name: string;
-        fromVersion?: string;
-        toVersion?: string;
-    }[];
-
-    supportPackages: {
-        component: string;
-        version: string;
-        supportPackage: string;
-    }[];
-
-    cves: string[];
-    cvssScore?: number;
-    cvssVector?: string;
-    priority?: string;
-    correction?: string;
-
-    confidence: number;
-};
-
-export function extractSapNoteFields(text: string): ExtractedNote {
-    let confidence = 0;
-
-    // ─────────────────────────────────────────────
-    // NOTE NUMBER
-    // Example: "3426825 - [CVE-2025-23191]"
-    // ─────────────────────────────────────────────
-    const noteNumber =
-        text.match(/^(\d{6,7})\s*-/m)?.[1] ||
-        text.match(/SAP\s+Note\s+(\d{6,7})/i)?.[1];
-
-    if (noteNumber) confidence += 20;
-
-    // ─────────────────────────────────────────────
-    // TITLE
-    // Example:
-    // "3426825 - Cache Poisoning through header manipulation"
-    // ─────────────────────────────────────────────
-    const title =
-        text.match(/^\d{6,7}\s*-\s*(.+)/m)?.[1]?.trim();
-
-    if (title) confidence += 10;
-
-    // ─────────────────────────────────────────────
-    // CVEs
-    // ─────────────────────────────────────────────
-    const cves = new Set<string>();
-    for (const cve of text.matchAll(/CVE-\d{4}-\d{4,7}/g)) {
-        cves.add(cve[0]);
-    }
-    if (cves.size > 0) confidence += 10;
-
-    // ─────────────────────────────────────────────
-    // CVSS
-    // ─────────────────────────────────────────────
-    const cvssScoreStr =
-        text.match(/CVSS\s*Score\s*[:=]\s*([\d.]+)/i)?.[1];
-    const cvssVector =
-        text.match(/CVSS\s*Vector\s*[:=]\s*(CVSS:[^\s]+)/i)?.[1];
-
-    const cvssScore = cvssScoreStr
-        ? parseFloat(cvssScoreStr)
-        : undefined;
-
-    if (cvssScore) confidence += 10;
-
-    // ─────────────────────────────────────────────
-    // PRIORITY (sometimes absent)
-    // ─────────────────────────────────────────────
-    const priority =
-        text.match(/Priority\s*[:=]\s*(Hot\s*News|High|Medium|Low)/i)?.[1];
-
-    if (priority) confidence += 5;
-
-    // ─────────────────────────────────────────────
-    // SOFTWARE COMPONENTS (CORE SECTION)
-    // SAP FORMAT:
-    // SAP_GWFND 740 740
-    // ─────────────────────────────────────────────
-    const components: ExtractedNote["components"] = [];
-
-    const softwareComponentsSection = extractSection(
-        text,
-        /Software\s+Components?/i,
-        /Correction\s+Instructions?|Support\s+Package|Prerequisites/i
-    );
-
-    if (softwareComponentsSection) {
-        confidence += 25;
-
-        const lineRegex =
-            /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/gm;
-
-        let match;
-        while ((match = lineRegex.exec(softwareComponentsSection))) {
-            components.push({
-                name: match[1],
-                fromVersion: match[2],
-                toVersion: match[3],
-            });
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // SUPPORT PACKAGES (REMEDIATION GOLD)
-    // Example:
-    // SAP_GWFND 740 SAPK-74033INSAPGWFND
-    // ─────────────────────────────────────────────
-    const supportPackages: ExtractedNote["supportPackages"] = [];
-
-    const supportPackageSection = extractSection(
-        text,
-        /Support\s+Package/i,
-        /References|This\s+document\s+refers/i
-    );
-
-    if (supportPackageSection) {
-        confidence += 10;
-
-        const spRegex =
-            /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(SAPK-[A-Z0-9]+)/gm;
-
-        let match;
-        while ((match = spRegex.exec(supportPackageSection))) {
-            supportPackages.push({
-                component: match[1],
-                version: match[2],
-                supportPackage: match[3],
-            });
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // CORRECTION INSTRUCTIONS (RAW TEXT)
-    // ─────────────────────────────────────────────
-    const correction =
-        extractSection(
-            text,
-            /Correction\s+Instructions?/i,
-            /Support\s+Package|References/i
-        ) ?? undefined;
-
-    if (correction) confidence += 5;
-
-    // ─────────────────────────────────────────────
-    // FINAL RESULT
-    // ─────────────────────────────────────────────
-    return {
-        noteNumber,
-        title,
-        components,
-        supportPackages,
-        cves: Array.from(cves),
-        cvssScore,
-        cvssVector,
-        priority,
-        correction,
-        confidence,
-    };
-}
 
 ================
 File: apps/sap-note-service/src/app.ts
@@ -5205,6 +6287,83 @@ File: apps/sap-note-service/package.json
 }
 
 ================
+File: apps/user-service/src/controllers/AuthController.ts
+================
+import { Request, Response } from "express";
+import type { CookieOptions } from "express";
+import jwt from "jsonwebtoken";
+import { prisma } from "../database/prisma";
+import { encryptPassword, isPasswordMatch } from "../utils";
+import config from "../config/config";
+
+const cookieOptions: CookieOptions = {
+    httpOnly: true,
+    secure: config.env === "production",
+    sameSite: "strict",
+    maxAge: 24 * 60 * 60 * 1000,
+};
+
+const signToken = (payload: any) =>
+    jwt.sign(payload, config.JWT_SECRET!, { expiresIn: "1d" });
+
+export default {
+    async register(req: Request, res: Response) {
+        const { email, password } = req.body;
+
+        const exists = await prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (exists) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+
+        const hashed = await encryptPassword(password);
+
+        const user = await prisma.user.create({
+            data: {
+                email,
+                password: hashed,
+            },
+        });
+
+        return res.json({
+            message: "User registered",
+            data: {
+                id: user.id,
+                email: user.email,
+            },
+        });
+    },
+
+    async login(req: Request, res: Response) {
+        const { email, password } = req.body;
+
+        const user = await prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        const match = await isPasswordMatch(password, user.password);
+        if (!match) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        const token = signToken({ id: user.id, email: user.email });
+
+        res.cookie("jwt", token, cookieOptions);
+
+        return res.json({
+            message: "Login successful",
+            token,
+        });
+    },
+};
+
+================
 File: apps/user-service/src/middleware/index.ts
 ================
 import { ErrorRequestHandler } from "express";
@@ -5261,6 +6420,180 @@ router.post("/users/auth/register", validate(registerSchema), AuthController.reg
 router.post("/users/auth/login", validate(loginSchema), AuthController.login);
 
 export default router;
+
+================
+File: apps/user-service/src/services/rabbitmq.service.ts
+================
+import { Channel, ChannelModel, connect } from "amqplib";
+import config from "../config/config";
+import { prisma } from "../database/prisma";
+import { ApiError } from "../utils";
+
+class RabbitMQService {
+    private requestQueue = "USER_DETAILS_REQUEST";
+    private responseQueue = "USER_DETAILS_RESPONSE";
+    private connection?: ChannelModel;
+    private channel?: Channel;
+    private initializing?: Promise<void>;
+    private consumerStarted = false;
+
+    constructor() {
+        // Do not auto-connect here
+    }
+
+    async init(): Promise<void> {
+        if (!config.msgBrokerURL) {
+            throw new Error(
+                "Missing MESSAGE_BROKER_URL. Set it in apps/user-service/.env"
+            );
+        }
+
+        const msgBrokerURL = config.msgBrokerURL;
+
+        if (this.channel) return;
+        if (this.initializing) return this.initializing;
+
+        this.initializing = (async () => {
+            const maxAttempts = 30;
+            const delayMs = 1000;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                try {
+                    this.consumerStarted = false;
+
+                    this.connection = await connect(msgBrokerURL);
+
+                    this.connection.on("close", () => {
+                        this.connection = undefined;
+                        this.channel = undefined;
+                        this.initializing = undefined;
+                        this.consumerStarted = false;
+                        void this.init().catch(() => undefined);
+                    });
+
+                    this.channel = await this.connection.createChannel();
+
+                    this.channel.on("close", () => {
+                        this.channel = undefined;
+                        this.initializing = undefined;
+                        this.consumerStarted = false;
+                        void this.init().catch(() => undefined);
+                    });
+
+                    await this.channel.assertQueue(this.requestQueue);
+                    await this.channel.assertQueue(this.responseQueue);
+
+                    this.listenForRequests();
+                    return;
+                } catch (err) {
+                    if (attempt === maxAttempts) throw err;
+                    await new Promise((resolve) => setTimeout(resolve, delayMs));
+                }
+            }
+        })();
+
+        try {
+            await this.initializing;
+        } finally {
+            this.initializing = undefined;
+        }
+    }
+
+    private async listenForRequests() {
+        if (!this.channel) return;
+        if (this.consumerStarted) return;
+        this.consumerStarted = true;
+
+        this.channel.consume(this.requestQueue, async (msg) => {
+            if (!msg) return;
+
+            try {
+                const { userId } = JSON.parse(msg.content.toString());
+                const userDetails = await getUserDetails(userId);
+
+                this.channel?.sendToQueue(
+                    this.responseQueue,
+                    Buffer.from(JSON.stringify(userDetails)),
+                    { correlationId: msg.properties.correlationId }
+                );
+
+                this.channel?.ack(msg);
+            } catch (err) {
+                this.channel?.ack(msg);
+            }
+        });
+    }
+}
+
+/**
+ * 🔁 Mongo → Prisma replacement
+ */
+const getUserDetails = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            email: true,
+            isVerified: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return user;
+};
+
+export const rabbitMQService = new RabbitMQService();
+
+================
+File: apps/user-service/package.json
+================
+{
+  "name": "user-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development nodemon src/server.ts",
+    "build": "rm -rf build/ && tsc -p .",
+    "start": "NODE_ENV=production nodemon build/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.3.0",
+    "@types/express": "^4.17.21",
+    "@types/validator": "^13.11.8",
+    "amqplib": "^0.10.3",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.0.2",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.3",
+    "prisma": "^7.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "validator": "^13.11.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/pg": "^8.16.0",
+    "@types/pino": "^7.0.5"
+  }
+}
 
 ================
 File: docker-compose.yml
@@ -5620,121 +6953,241 @@ model SapVulnerability {
 }
 
 ================
-File: apps/sap-note-service/src/workers/note.worker.ts
+File: apps/sap-core-service/package.json
 ================
-import { Worker } from "bullmq";
-import fs from "fs";
-import { PDFParse } from "pdf-parse";
-import prisma from "../config/db";
-import { connection } from "../config/redis";
-import { normalizePdfText } from "../utils/textNormalizer";
-import { extractSapNoteFields } from "../utils/noteExtractor";
-import { logger } from "../utils/logger";
-
-interface NoteJob {
-    filePath: string;
+{
+  "name": "sap-core-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@types/pg": "^8.16.0",
+    "bullmq": "^5.66.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.8.2",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0",
+    "ts-node": "^10.9.2",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.15.3",
+    "dotenv": "^17.2.3",
+    "nodemon": "^3.1.11",
+    "prisma": "^7.2.0"
+  }
 }
 
-export const noteWorker = new Worker<NoteJob>(
-    "sap-note-queue",
-    async (job) => {
-        const { filePath } = job.data;
+================
+File: apps/sap-note-service/src/utils/noteExtractor.ts
+================
+import { extractSection } from "./sectionExtractor";
 
-        logger.info(`[SAP-NOTE] Parsing PDF: ${filePath}`);
+export type ExtractedNote = {
+    noteNumber?: string;
+    title?: string;
 
-        try {
-            if (!fs.existsSync(filePath)) {
-                throw new Error("PDF file not found on disk");
-            }
+    components: {
+        name: string;
+        fromVersion?: string;
+        toVersion?: string;
+    }[];
 
-            // 1️⃣ Read PDF
-            const buffer = fs.readFileSync(filePath);
-            const parser = new PDFParse({ data: buffer });
-            const parsed = await parser.getText();
-            await parser.destroy();
+    supportPackages: {
+        component: string;
+        version: string;
+        supportPackage: string;
+    }[];
 
-            // 2️⃣ Normalize text (CRITICAL)
-            const normalizedText = normalizePdfText(parsed.text);
+    cves: string[];
+    cvssScore?: number;
+    cvssVector?: string;
+    priority?: string;
+    correction?: string;
 
-            // 3️⃣ Extract structured fields
-            const extracted = extractSapNoteFields(normalizedText);
+    confidence: number;
+};
 
-            // 4️⃣ Confidence gate
-            logger.info(
-                `[SAP-NOTE] confidence=${extracted.confidence} note=${extracted.noteNumber ?? "unknown"}`
-            );
+/* ===============================
+   INLINE COMPONENT EXTRACTION
+================================ */
+function extractInlineComponents(text: string) {
+    const results: ExtractedNote["components"] = [];
 
-            if (!extracted.noteNumber || extracted.confidence < 40) {
-                throw new Error(
-                    `Low confidence extraction (${extracted.confidence})`
-                );
-            }
+    const regex =
+        /Component:\s*([A-Z0-9_-]+)[\s\S]{0,120}?(?:Version|Release):\s*([0-9.]+)/gi;
 
+    let match;
 
-            // 5️⃣ Store SAP Note (upsert)
-            const note = await prisma.sapNote.upsert({
-                where: { noteNumber: extracted.noteNumber },
-                update: {
-                    title: extracted.title,
-                    priority: extracted.priority,
-                    cvssScore: extracted.cvssScore,
-                    cvssVector: extracted.cvssVector,
-                    confidence: extracted.confidence,
-                    correction: extracted.correction,
-                    rawText: normalizedText,
-                },
-                create: {
-                    title: extracted.title,
-                    noteNumber: extracted.noteNumber,
-                    priority: extracted.priority,
-                    cvssScore: extracted.cvssScore,
-                    cvssVector: extracted.cvssVector,
-                    confidence: extracted.confidence,
-                    correction: extracted.correction,
-                    rawText: normalizedText,
-                },
-            });
-
-            // 6️⃣ Store affected components (normalized)
-            for (const component of extracted.components) {
-                await prisma.sapNoteComponent.upsert({
-                    where: {
-                        noteId_component: {
-                            noteId: note.id,
-                            component: component.name,
-                        },
-                    },
-                    update: {
-                        fromVersion: component.fromVersion,
-                        toVersion: component.toVersion,
-                    },
-                    create: {
-                        noteId: note.id,
-                        component: component.name,
-                        fromVersion: component.fromVersion,
-                        toVersion: component.toVersion,
-                    },
-                });
-            }
-
-            logger.info(
-                `[SAP-NOTE] Parsed SAP Note ${extracted.noteNumber} successfully`
-            );
-        } catch (err: any) {
-            logger.error(`[SAP-NOTE] Failed to parse PDF: ${err.message}`);
-            throw err;
-        } finally {
-            // 7️⃣ Cleanup
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        }
-    },
-    {
-        connection,
-        concurrency: 1,
+    while ((match = regex.exec(text))) {
+        results.push({
+            name: match[1],
+            fromVersion: match[2],
+            toVersion: match[2],
+        });
     }
-);
+
+    return results;
+}
+
+/* ===============================
+   STRUCTURED TABLE EXTRACTION
+================================ */
+function extractStructuredComponents(text: string) {
+    const results: ExtractedNote["components"] = [];
+
+    const section = extractSection(
+        text,
+        /Software\s+Components?/i,
+        /Correction\s+Instructions?|Support\s+Package|Prerequisites/i
+    );
+
+    if (!section) return results;
+
+    const lineRegex =
+        /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/gm;
+
+    let match;
+
+    while ((match = lineRegex.exec(section))) {
+        results.push({
+            name: match[1],
+            fromVersion: match[2],
+            toVersion: match[3],
+        });
+    }
+
+    return results;
+}
+
+/* ===============================
+   SUPPORT PACKAGE EXTRACTION
+================================ */
+function extractSupportPackages(text: string) {
+    const results: ExtractedNote["supportPackages"] = [];
+
+    const section = extractSection(
+        text,
+        /Support\s+Package/i,
+        /References|This\s+document\s+refers/i
+    );
+
+    if (!section) return results;
+
+    const regex =
+        /^([A-Z0-9_-]+)\s+(\d+(?:\.\d+)?)\s+(SAPK-[A-Z0-9]+)/gm;
+
+    let match;
+
+    while ((match = regex.exec(section))) {
+        results.push({
+            component: match[1],
+            version: match[2],
+            supportPackage: match[3],
+        });
+    }
+
+    return results;
+}
+
+/* ===============================
+   MERGE COMPONENT RESULTS
+================================ */
+function mergeComponents(
+    ...arrays: ExtractedNote["components"][]
+): ExtractedNote["components"] {
+    const map = new Map<string, ExtractedNote["components"][number]>();
+
+    arrays.flat().forEach((c) => {
+        if (!map.has(c.name)) {
+            map.set(c.name, c);
+        }
+    });
+
+    return Array.from(map.values());
+}
+
+/* ===============================
+   MAIN EXTRACTOR
+================================ */
+export function extractSapNoteFields(text: string): ExtractedNote {
+    let confidence = 0;
+
+    const noteNumber =
+        text.match(/^(\d{6,7})\s*-/m)?.[1] ||
+        text.match(/SAP\s+Note\s+(\d{6,7})/i)?.[1];
+
+    if (noteNumber) confidence += 20;
+
+    const title =
+        text.match(/^\d{6,7}\s*-\s*(.+)/m)?.[1]?.trim();
+
+    if (title) confidence += 10;
+
+    const cves = new Set<string>();
+    for (const cve of text.matchAll(/CVE-\d{4}-\d{4,7}/g)) {
+        cves.add(cve[0]);
+    }
+    if (cves.size > 0) confidence += 10;
+
+    const cvssScoreStr =
+        text.match(/CVSS\s*Score\s*[:=]\s*([\d.]+)/i)?.[1];
+    const cvssVector =
+        text.match(/CVSS\s*Vector\s*[:=]\s*(CVSS:[^\s]+)/i)?.[1];
+
+    const cvssScore = cvssScoreStr
+        ? parseFloat(cvssScoreStr)
+        : undefined;
+
+    if (cvssScore) confidence += 10;
+
+    const priority =
+        text.match(/Priority\s*[:=]\s*(Hot\s*News|High|Medium|Low)/i)?.[1];
+
+    if (priority) confidence += 5;
+
+    const structured = extractStructuredComponents(text);
+    const inline = extractInlineComponents(text);
+    const components = mergeComponents(structured, inline);
+
+    if (components.length > 0) confidence += 25;
+
+    const supportPackages = extractSupportPackages(text);
+
+    const correction =
+        extractSection(
+            text,
+            /Correction\s+Instructions?/i,
+            /Support\s+Package|References/i
+        ) ?? undefined;
+
+    return {
+        noteNumber,
+        title,
+        components,
+        supportPackages,
+        cves: Array.from(cves),
+        cvssScore,
+        cvssVector,
+        priority,
+        correction,
+        confidence,
+    };
+}
 
 ================
 File: apps/sap-note-service/src/server.ts
@@ -5779,6 +7232,136 @@ process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
 ================
+File: apps/sap-note-service/src/workers/note.worker.ts
+================
+import { Worker } from "bullmq";
+import fs from "fs";
+import { PDFParse } from "pdf-parse";
+import prisma from "../config/db";
+import { connection } from "../config/redis";
+import { normalizePdfText } from "../utils/textNormalizer";
+import { extractSapNoteFields } from "../utils/noteExtractor";
+import { logger } from "../utils/logger";
+import { classifyStack } from "../utils/componentClassifier";
+interface NoteJob {
+    filePath: string;
+}
+
+export const noteWorker = new Worker<NoteJob>(
+    "sap-note-queue",
+    async (job) => {
+        const { filePath } = job.data;
+
+        logger.info(`[SAP-NOTE] Parsing PDF: ${filePath}`);
+
+        try {
+            if (!fs.existsSync(filePath)) {
+                throw new Error("PDF file not found on disk");
+            }
+
+            // 1️⃣ Read PDF
+            const buffer = fs.readFileSync(filePath);
+            const parser = new PDFParse({ data: buffer });
+            const parsed = await parser.getText();
+            await parser.destroy();
+
+            // 2️⃣ Normalize text (CRITICAL)
+            const normalizedText = normalizePdfText(parsed.text);
+
+            // 3️⃣ Extract structured fields
+            const extracted = extractSapNoteFields(normalizedText);
+
+
+            // 4️⃣ Confidence gate
+            logger.info(
+                `[SAP-NOTE] confidence=${extracted.confidence} note=${extracted.noteNumber ?? "unknown"}`
+            );
+
+            // Debug log before DB write
+            logger.info({
+                note: extracted.noteNumber,
+                components: extracted.components,
+                confidence: extracted.confidence,
+            });
+
+            if (!extracted.noteNumber || extracted.components.length === 0) {
+                throw new Error(
+                    `Low confidence extraction (${extracted.confidence})`
+                );
+            }
+
+
+            // 5️⃣ Store SAP Note (upsert)
+            const note = await prisma.sapNote.upsert({
+                where: { noteNumber: extracted.noteNumber },
+                update: {
+                    title: extracted.title,
+                    priority: extracted.priority,
+                    cvssScore: extracted.cvssScore,
+                    cvssVector: extracted.cvssVector,
+                    confidence: extracted.confidence,
+                    correction: extracted.correction,
+                    rawText: normalizedText,
+                },
+                create: {
+                    title: extracted.title,
+                    noteNumber: extracted.noteNumber,
+                    priority: extracted.priority,
+                    cvssScore: extracted.cvssScore,
+                    cvssVector: extracted.cvssVector,
+                    confidence: extracted.confidence,
+                    correction: extracted.correction,
+                    rawText: normalizedText,
+                },
+            });
+
+            // 6️⃣ Store affected components (normalized)
+
+            for (const component of extracted.components) {
+                const stack = classifyStack(component.name);
+
+                await prisma.sapNoteComponent.upsert({
+                    where: {
+                        noteId_component: {
+                            noteId: note.id,
+                            component: component.name,
+                        },
+                    },
+                    update: {
+                        stack,
+                        fromVersion: component.fromVersion ?? component.toVersion,
+                        toVersion: component.toVersion ?? component.fromVersion,
+                    },
+                    create: {
+                        noteId: note.id,
+                        component: component.name,
+                        stack,
+                        fromVersion: component.fromVersion ?? component.toVersion,
+                        toVersion: component.toVersion ?? component.fromVersion,
+                    },
+                });
+            }
+
+            logger.info(
+                `[SAP-NOTE] Parsed SAP Note ${extracted.noteNumber} successfully`
+            );
+        } catch (err: any) {
+            logger.error(`[SAP-NOTE] Failed to parse PDF: ${err.message}`);
+            throw err;
+        } finally {
+            // 7️⃣ Cleanup
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+    },
+    {
+        connection,
+        concurrency: 1,
+    }
+);
+
+================
 File: apps/sap-note-service/prisma/schema.prisma
 ================
 // This is your Prisma schema file,
@@ -5797,33 +7380,35 @@ datasource db {
 }
 
 model SapNote {
-  id           String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  noteNumber   String   @unique
-  title        String? 
-  priority     String?
-  cvssScore    Float?
-  cvssVector   String?
+  noteNumber String  @unique
+  title      String?
+  priority   String?
+  cvssScore  Float?
+  cvssVector String?
 
-  confidence   Int
-  correction   String?
+  confidence Int
+  correction String?
 
-  rawText      String
-  createdAt    DateTime @default(now())
+  rawText   String
+  createdAt DateTime @default(now())
 
-  components   SapNoteComponent[]
+  components SapNoteComponent[]
 }
 
 model SapNoteComponent {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  noteId      String
-  note        SapNote  @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId String
+  note   SapNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
   component   String
+  stack       String 
   fromVersion String?
   toVersion   String?
-  fixedInSp  String?
+  fixedInSp   String?
+
   @@unique([noteId, component])
 }
 

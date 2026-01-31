@@ -6,7 +6,7 @@ import { connection } from "../config/redis";
 import { normalizePdfText } from "../utils/textNormalizer";
 import { extractSapNoteFields } from "../utils/noteExtractor";
 import { logger } from "../utils/logger";
-
+import { classifyStack } from "../utils/componentClassifier";
 interface NoteJob {
     filePath: string;
 }
@@ -80,7 +80,10 @@ export const noteWorker = new Worker<NoteJob>(
             });
 
             // 6️⃣ Store affected components (normalized)
+
             for (const component of extracted.components) {
+                const stack = classifyStack(component.name);
+
                 await prisma.sapNoteComponent.upsert({
                     where: {
                         noteId_component: {
@@ -89,12 +92,14 @@ export const noteWorker = new Worker<NoteJob>(
                         },
                     },
                     update: {
+                        stack,
                         fromVersion: component.fromVersion ?? component.toVersion,
                         toVersion: component.toVersion ?? component.fromVersion,
                     },
                     create: {
                         noteId: note.id,
                         component: component.name,
+                        stack,
                         fromVersion: component.fromVersion ?? component.toVersion,
                         toVersion: component.toVersion ?? component.fromVersion,
                     },
